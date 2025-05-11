@@ -1,0 +1,57 @@
+# Server Configuration
+DEPLOY_USER=""
+DEPLOY_HOST=""
+DOMAIN=""
+SSL_EMAIL=""
+
+# Security Credentials
+ADMIN_USERNAME=""
+ADMIN_PASSWORD=""
+REDIS_PASSWORD=""
+
+# Environment Configuration
+ENVIRONMENT="production"
+ALLOWED_ORIGINS=""
+
+# Monitoring Configuration
+OTLP_ENDPOINT="localhost:4317"
+PROMETHEUS_PORT="9090"
+
+# Resource Limits
+WORKERS="4"
+MAX_REQUESTS="1000"
+
+# Backup Configuration
+BACKUP_RETENTION="5"
+BACKUP_SCHEDULE="0 0 * * *"
+
+# Redis Configuration
+REDIS_HOST="localhost"
+REDIS_PORT="6379"
+REDIS_SSL="false"
+
+# System User Configuration
+SERVICE_USER="lexcommand"
+SERVICE_GROUP="lexcommand"
+
+# Repository Configuration
+REPO_URL=""
+REPO_BRANCH="main"
+
+# SSL Configuration
+SSL_CERT_PATH="/etc/letsencrypt/live/${DOMAIN}/fullchain.pem"
+SSL_KEY_PATH="/etc/letsencrypt/live/${DOMAIN}/privkey.pem"
+
+# Logging Configuration
+LOG_LEVEL="INFO"
+LOG_PATH="/var/log/lexcommand"
+LOG_RETENTION="30"
+
+# Rate Limiting
+RATE_LIMIT_REQUESTS="100"
+RATE_LIMIT_PERIOD="60"
+
+# WebSocket Configuration
+WS_HEARTBEAT_INTERVAL="30"
+WS_CLEANUP_INTERVAL="60"
+WS_MAX_CONNECTIONS="1000" 
