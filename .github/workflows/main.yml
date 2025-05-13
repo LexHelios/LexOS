@@ -1,0 +1,23 @@
+name: Deploy to Vultr
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Run deployment script
+        run: |
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.VULTR_IP }} "bash /root/deploy.sh"
