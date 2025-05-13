@@ -1,32 +1,14 @@
-name: Deploy to Vultr
+- name: Deploy and ensure directory exists
+  run: |
+    ssh -o StrictHostKeyChecking=no root@${{ secrets.VULTR_IP }} << 'EOF'
+      set -e
+      echo "🛠️ Creating /opt/lexcommand if it doesn't exist..."
+      mkdir -p /opt/lexcommand
 
-on:
-  push:
-    branches:
-      - main
+      echo "📦 Deploying LexOS..."
+      cd /opt/lexcommand
+      bash deploy.sh >> /var/log/lexos_deploy.log 2>&1
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Install SSH key
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Ensure /opt/lexcommand exists
-        run: |
-          ssh -o StrictHostKeyChecking=no root@${{ secrets.VULTR_IP }} "mkdir -p /opt/lexcommand"
-
-      - name: Sync repo to /opt/lexcommand
-        run: |
-          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ root@${{ secrets.VULTR_IP }}:/opt/lexcommand
-
-      - name: Run deployment script
-        run: |
-          ssh -o StrictHostKeyChecking=no root@${{ secrets.VULTR_IP }} \
-          "cd /opt/lexcommand && bash deploy.sh >> /var/log/lexos_deploy.log 2>&1 || (echo '❌ Deploy failed'; tail -n 50 /var/log/lexos_deploy.log; exit 1)"
+      echo "✅ Deployment complete. Showing last 20 lines of log:"
+      tail -n 20 /var/log/lexos_deploy.log
+    EOF
