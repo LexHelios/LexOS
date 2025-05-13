@@ -18,6 +18,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Sync repo to /opt/lexcommand
+        run: |
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ root@${{ secrets.VULTR_IP }}:/opt/lexcommand
+
       - name: Run deployment script
         run: |
-          ssh -o StrictHostKeyChecking=no root@${{ secrets.VULTR_IP }} "bash /root/deploy.sh"
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.VULTR_IP }} \
+          "bash /opt/lexcommand/scripts/deploy.sh >> /var/log/lexos_deploy.log 2>&1 || (tail -n 50 /var/log/lexos_deploy.log && exit 1)"
