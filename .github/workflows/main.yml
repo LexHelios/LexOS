@@ -25,4 +25,4 @@ jobs:
       - name: Run deployment script
         run: |
           ssh -o StrictHostKeyChecking=no root@${{ secrets.VULTR_IP }} \
-          "bash /opt/lexcommand/scripts/deploy.sh >> /var/log/lexos_deploy.log 2>&1 || (tail -n 50 /var/log/lexos_deploy.log && exit 1)"
+          "bash /opt/lexcommand/deploy.sh >> /var/log/lexos_deploy.log 2>&1 || (tail -n 50 /var/log/lexos_deploy.log && exit 1)"
