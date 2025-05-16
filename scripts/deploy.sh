@@ -31,8 +31,10 @@ print_error() {
 # Check if Vultr CLI is installed
 if ! command -v vultr &> /dev/null; then
     print_status "Installing Vultr CLI..."
-    curl -L https://github.com/vultr/vultr-cli/releases/download/v2.0.0/vultr-cli_2.0.0_linux_amd64.tar.gz | tar xz
+    curl -L https://github.com/vultr/vultr-cli/releases/download/v3.4.0/vultr-cli_v3.4.0_linux_amd64.tar.gz -o vultr-cli.tar.gz
+    tar xzf vultr-cli.tar.gz
     sudo mv vultr-cli /usr/local/bin/vultr
+    rm vultr-cli.tar.gz
 fi
 
 # Configure Vultr CLI
