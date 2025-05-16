@@ -1,46 +1,61 @@
 version: "3.9"
+
 services:
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DOMAIN=lexcommand.ai
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=$Overlord0824
+      - REDIS_PASSWORD=secure-redis-pass123
+      - ALLOWED_ORIGINS=https://lexcommand.ai
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_SSL=false
+      - LOG_LEVEL=INFO
     volumes:
-      - ./backend:/app
-    env_file:
-      - .env
+      - ./keys:/etc/lexcommand/keys:ro
+      - ./logs:/var/log/lexcommand
     depends_on:
       - redis
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "8080:80"
-    volumes:
-      - ./frontend:/app
-    depends_on:
-      - backend
+    restart: unless-stopped
+    networks:
+      - lexcommand-network
 
   redis:
     image: redis:7.2-alpine
+    command: redis-server --requirepass secure-redis-pass123
+    volumes:
+      - redis-data:/data
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - lexcommand-network
 
-  caddy:
-    image: caddy:2.7-alpine
+  nginx:
+    image: nginx:alpine
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./frontend:/usr/share/nginx/html:ro
     depends_on:
-      - frontend
       - backend
+    restart: unless-stopped
+    networks:
+      - lexcommand-network
+
+networks:
+  lexcommand-network:
+    driver: bridge
 
 volumes:
-  redis_data:
-  caddy_data:
-  caddy_config:
+  redis-data:
