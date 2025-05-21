@@ -1,0 +1,99 @@
+models:
+  # Text Generation Models
+  llama2-7b:
+    type: text-generation
+    path: meta-llama/Llama-2-7b-hf
+    quantization: 4bit
+    max_length: 2048
+    temperature: 0.7
+    top_p: 0.95
+
+  llama2-13b:
+    type: text-generation
+    path: meta-llama/Llama-2-13b-hf
+    quantization: 4bit
+    max_length: 2048
+    temperature: 0.7
+    top_p: 0.95
+
+  mistral-7b:
+    type: text-generation
+    path: mistralai/Mistral-7B-v0.1
+    quantization: 4bit
+    max_length: 2048
+    temperature: 0.7
+    top_p: 0.95
+
+  # Code Generation Models
+  codellama-7b:
+    type: text-generation
+    path: codellama/CodeLlama-7b-hf
+    quantization: 4bit
+    max_length: 2048
+    temperature: 0.2
+    top_p: 0.95
+
+  codellama-13b:
+    type: text-generation
+    path: codellama/CodeLlama-13b-hf
+    quantization: 4bit
+    max_length: 2048
+    temperature: 0.2
+    top_p: 0.95
+
+  # Chat Models
+  llama2-chat-7b:
+    type: text-generation
+    path: meta-llama/Llama-2-7b-chat-hf
+    quantization: 4bit
+    max_length: 2048
+    temperature: 0.7
+    top_p: 0.95
+
+  llama2-chat-13b:
+    type: text-generation
+    path: meta-llama/Llama-2-13b-chat-hf
+    quantization: 4bit
+    max_length: 2048
+    temperature: 0.7
+    top_p: 0.95
+
+  # Instruction Tuned Models
+  mistral-instruct-7b:
+    type: text-generation
+    path: mistralai/Mistral-7B-Instruct-v0.1
+    quantization: 4bit
+    max_length: 2048
+    temperature: 0.7
+    top_p: 0.95
+
+  # Multilingual Models
+  bloom-7b:
+    type: text-generation
+    path: bigscience/bloom-7b1
+    quantization: 4bit
+    max_length: 2048
+    temperature: 0.7
+    top_p: 0.95
+
+  # Embedding Models
+  all-MiniLM-L6-v2:
+    type: sentence-transformers
+    path: sentence-transformers/all-MiniLM-L6-v2
+    max_length: 512
+
+  all-mpnet-base-v2:
+    type: sentence-transformers
+    path: sentence-transformers/all-mpnet-base-v2
+    max_length: 512
+
+# Global Settings
+settings:
+  device: cuda
+  batch_size: 1
+  cache_dir: /app/models
+  use_8bit: false
+  use_4bit: true
+  use_flash_attention: true
+  use_bf16: true
+  max_memory: 0.9  # 90% of available GPU memory 

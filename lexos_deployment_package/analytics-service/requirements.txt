@@ -1,0 +1,93 @@
+# Core dependencies
+fastapi>=0.100.0
+uvicorn>=0.22.0
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+redis>=4.5.0
+psycopg2-binary>=2.9.0
+SQLAlchemy>=2.0.0
+alembic>=1.11.0
+
+# Data processing and analysis
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.12.0
+scikit-learn>=1.2.0
+statsmodels>=0.14.0
+prophet>=1.1.4
+pmdarima>=2.0.3
+
+# Machine learning
+torch>=2.0.0
+torchvision>=0.15.0
+transformers>=4.30.0
+tensorflow>=2.15.0
+xgboost>=2.0.0
+lightgbm>=4.1.0
+catboost>=1.2.0
+
+# Deep learning
+tensorflow-gpu>=2.15.0
+keras>=2.15.0
+pytorch-lightning>=2.0.0
+optuna>=3.3.0
+ray[tune]>=2.7.0
+
+# Data visualization
+matplotlib>=3.8.0
+seaborn>=0.13.0
+plotly>=5.18.0
+bokeh>=3.2.0
+dash>=2.14.0
+
+# Monitoring and logging
+prometheus-client>=0.17.0
+python-json-logger>=2.0.0
+structlog>=23.1.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+
+# Security
+cryptography>=41.0.0
+python-jose>=3.3.0
+passlib>=1.7.4
+bcrypt>=4.0.1
+
+# API documentation
+swagger-ui-bundle>=0.0.9
+python-multipart>=0.0.6
+
+# Caching
+redis>=4.5.0
+aioredis>=2.0.0
+
+# Utilities
+python-dateutil>=2.8.2
+pytz>=2024.1
+tqdm>=4.66.0
+colorama>=0.4.6
+rich>=13.7.0
+typer>=0.9.0
+click>=8.1.0
+
+# GPU monitoring
+gputil>=1.4.0
+pynvml>=11.5.0
+
+# Distributed computing
+dask>=2024.1.0
+distributed>=2024.1.0
+ray>=2.7.0
+
+# Feature engineering
+featuretools>=1.27.0
+tsfresh>=0.20.0
+category_encoders>=2.6.0
+
+# Model serving
+mlflow>=2.8.0
+bentoml>=1.2.0
+tritonclient>=2.34.0 
