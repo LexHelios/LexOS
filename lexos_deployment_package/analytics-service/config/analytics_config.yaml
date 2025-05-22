@@ -1,0 +1,185 @@
+# Analytics Service Configuration
+
+# Service Information
+service:
+  name: "LexOS Analytics Service"
+  version: "1.0.0"
+  environment: "production"
+  log_level: "INFO"
+  metrics_port: 9090
+
+# Database Configuration
+database:
+  host: "postgres"
+  port: 5432
+  name: "lexos_analytics"
+  user: "${POSTGRES_USER}"
+  password: "${POSTGRES_PASSWORD}"
+  pool_size: 20
+  max_overflow: 10
+  pool_timeout: 30
+  pool_recycle: 1800
+
+# Redis Configuration
+redis:
+  host: "redis"
+  port: 6379
+  password: "${REDIS_PASSWORD}"
+  db: 0
+  max_connections: 100
+  socket_timeout: 5
+  socket_connect_timeout: 5
+
+# Data Processing Settings
+data_processing:
+  max_file_size: 100MB
+  supported_formats:
+    - csv
+    - json
+    - parquet
+    - excel
+  chunk_size: 10000
+  workers: 4
+  timeout: 300
+  retry_attempts: 3
+  retry_delay: 5
+
+# Model Management
+model_management:
+  storage:
+    type: "local"
+    path: "/data/models"
+  versioning: true
+  deployment:
+    strategy: "rolling"
+    batch_size: 100
+    timeout: 60
+  monitoring:
+    metrics:
+      - accuracy
+      - precision
+      - recall
+      - f1_score
+      - latency
+    interval: 60
+    retention_days: 30
+
+# Analytics Operations
+analytics:
+  statistical:
+    enabled: true
+    methods:
+      - descriptive
+      - inferential
+      - time_series
+  machine_learning:
+    enabled: true
+    algorithms:
+      - random_forest
+      - gradient_boosting
+      - svm
+      - neural_network
+    frameworks:
+      - scikit-learn
+      - pytorch
+      - tensorflow
+  deep_learning:
+    enabled: true
+    models:
+      - cnn
+      - rnn
+      - transformer
+    gpu_enabled: true
+
+# Monitoring
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+    path: "/metrics"
+  health_check:
+    interval: 30
+    timeout: 5
+  logging:
+    level: "INFO"
+    format: "json"
+    handlers:
+      - console
+      - file
+    file:
+      path: "/var/log/analytics.log"
+      max_size: 100MB
+      backup_count: 5
+
+# Security
+security:
+  ssl:
+    enabled: true
+    cert_path: "/etc/ssl/certs/analytics.crt"
+    key_path: "/etc/ssl/private/analytics.key"
+  authentication:
+    method: "jwt"
+    token_expiry: 3600
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 100
+    burst_size: 50
+
+# Resource Management
+resources:
+  cpu:
+    limit: 4
+    request: 2
+  memory:
+    limit: 8Gi
+    request: 4Gi
+  gpu:
+    enabled: true
+    count: 1
+  storage:
+    limit: 100Gi
+    request: 50Gi
+
+# Alerting
+alerting:
+  thresholds:
+    cpu_usage: 90
+    memory_usage: 85
+    disk_usage: 90
+    gpu_usage: 95
+    gpu_temperature: 85
+    model_accuracy: 0.7
+    prediction_latency: 1.0
+  email:
+    enabled: true
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    from: "${ALERT_EMAIL}"
+    to: "${ALERT_RECIPIENTS}"
+    username: "${ALERT_EMAIL}"
+    password: "${ALERT_EMAIL_PASSWORD}"
+  slack:
+    enabled: true
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+    channel: "#alerts"
+
+# Visualization
+visualization:
+  style:
+    matplotlib_style: "seaborn"
+    seaborn_style: "whitegrid"
+    color_palette: "viridis"
+    plotly_template: "plotly_white"
+    font_family: "Arial"
+    font_size: 12
+  default_plot_size:
+    width: 800
+    height: 600
+  export_formats:
+    - png
+    - jpg
+    - svg
+    - pdf
+  interactive:
+    enabled: true
+    port: 8050 

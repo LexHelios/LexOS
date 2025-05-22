@@ -1,0 +1,152 @@
+# Maintenance Agent Configuration
+
+# Service settings
+service:
+  name: lexos-maintenance-agent
+  version: 1.0.0
+  environment: production
+  log_level: INFO
+  metrics_port: 8000
+
+# Database configuration
+database:
+  host: postgres
+  port: 5432
+  name: ${POSTGRES_DB}
+  user: ${POSTGRES_USER}
+  password: ${DB_PASSWORD}
+  pool_size: 20
+  max_overflow: 10
+  pool_timeout: 30
+  pool_recycle: 1800
+
+# Redis configuration
+redis:
+  host: redis
+  port: 6379
+  password: ${REDIS_PASSWORD}
+  db: 0
+  max_connections: 10
+  socket_timeout: 5
+  socket_connect_timeout: 5
+
+# System monitoring settings
+monitoring:
+  interval: 60  # seconds
+  metrics:
+    cpu:
+      enabled: true
+      threshold: 80
+    memory:
+      enabled: true
+      threshold: 85
+    disk:
+      enabled: true
+      threshold: 90
+    gpu:
+      enabled: true
+      threshold: 95
+    network:
+      enabled: true
+      threshold: 80
+  prometheus:
+    enabled: true
+    path: /metrics
+    port: 8000
+  health_check:
+    interval: 30
+    timeout: 5
+    retries: 3
+  logging:
+    level: INFO
+    format: json
+    output: stdout
+    retention: 30d
+
+# Backup settings
+backup:
+  enabled: true
+  schedule: "0 0 * * *"  # Daily at midnight
+  retention: 30d
+  compression: true
+  encryption: true
+  components:
+    - name: database
+      type: postgres
+      schedule: "0 1 * * *"  # Daily at 1 AM
+    - name: redis
+      type: redis
+      schedule: "0 2 * * *"  # Daily at 2 AM
+    - name: logs
+      type: files
+      schedule: "0 3 * * *"  # Daily at 3 AM
+  storage:
+    type: s3
+    bucket: ${BACKUP_BUCKET}
+    region: ${AWS_REGION}
+    prefix: lexos/backups
+
+# Maintenance tasks
+maintenance:
+  tasks:
+    - name: log_rotation
+      schedule: "0 0 * * *"  # Daily at midnight
+      priority: 1
+    - name: database_vacuum
+      schedule: "0 4 * * 0"  # Weekly on Sunday at 4 AM
+      priority: 2
+    - name: cache_cleanup
+      schedule: "0 5 * * *"  # Daily at 5 AM
+      priority: 3
+    - name: temp_file_cleanup
+      schedule: "0 6 * * *"  # Daily at 6 AM
+      priority: 4
+  max_concurrent_tasks: 2
+  task_timeout: 3600  # 1 hour
+  retry_attempts: 3
+  retry_delay: 300  # 5 minutes
+
+# Security settings
+security:
+  ssl:
+    enabled: true
+    cert_path: /etc/ssl/lexos/cert.pem
+    key_path: /etc/ssl/lexos/key.pem
+  authentication:
+    required: true
+    method: jwt
+    token_expiry: 3600
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 60
+    burst_size: 10
+
+# Resource limits
+resources:
+  cpu:
+    limit: 4
+    reservation: 2
+  memory:
+    limit: 8G
+    reservation: 4G
+  gpu:
+    enabled: true
+    device_ids: ${CUDA_VISIBLE_DEVICES}
+    memory_limit: 4G
+
+# Alerting settings
+alerts:
+  enabled: true
+  channels:
+    - type: email
+      recipients:
+        - ${ALERT_EMAIL}
+    - type: slack
+      webhook_url: ${SLACK_WEBHOOK_URL}
+  thresholds:
+    cpu_usage: 80
+    memory_usage: 85
+    disk_usage: 90
+    gpu_usage: 95
+    backup_failure: 3
+    maintenance_failure: 3 

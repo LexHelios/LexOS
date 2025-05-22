@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexOS DJ System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/wavesurfer.js@6.6.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .waveform-container {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .track-info {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .control-panel {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .visualization {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            height: 200px;
+        }
+        .camelot-wheel {
+            width: 300px;
+            height: 300px;
+            position: relative;
+            margin: 20px auto;
+        }
+        .camelot-position {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .camelot-position:hover {
+            transform: scale(1.1);
+        }
+        .camelot-position.active {
+            background: #4a9eff;
+            color: white;
+        }
+        .camelot-position.compatible {
+            background: #2d4a6d;
+            color: white;
+        }
+        /* New styles for advanced features */
+        .stem-controls {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .automation-lane {
+            background: #1a1a1a;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 5px 0;
+            height: 100px;
+            position: relative;
+        }
+        .automation-point {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #4a9eff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .beat-grid {
+            background: #1a1a1a;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 5px 0;
+            height: 60px;
+            position: relative;
+        }
+        .beat-marker {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: #4a9eff;
+            cursor: pointer;
+        }
+        .beat-marker.active {
+            background: #ff4a4a;
+        }
+        .effects-chain {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px;
+        }
+        .effect-block {
+            background: #2a2a2a;
+            border-radius: 4px;
+            padding: 10px;
+            min-width: 150px;
+        }
+        .effect-block.active {
+            border: 2px solid #4a9eff;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold mb-8">LexOS DJ System</h1>
+        
+        <!-- Library Management -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-4">Music Library</h2>
+            <div class="flex space-x-4">
+                <button id="scanLibrary" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                    Scan Library
+                </button>
+                <button id="uploadMusic" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">
+                    Upload Music
+                </button>
+            </div>
+        </div>
+
+        <!-- Current Track -->
+        <div class="track-info">
+            <h2 class="text-2xl font-bold mb-4">Current Track</h2>
+            <div id="currentTrack" class="waveform-container"></div>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                    <p class="text-gray-400">Title</p>
+                    <p id="trackTitle" class="text-xl">-</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Artist</p>
+                    <p id="trackArtist" class="text-xl">-</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">BPM</p>
+                    <p id="trackBPM" class="text-xl">-</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Key</p>
+                    <p id="trackKey" class="text-xl">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Track -->
+        <div class="track-info">
+            <h2 class="text-2xl font-bold mb-4">Next Track</h2>
+            <div id="nextTrack" class="waveform-container"></div>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                    <p class="text-gray-400">Title</p>
+                    <p id="nextTrackTitle" class="text-xl">-</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Artist</p>
+                    <p id="nextTrackArtist" class="text-xl">-</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">BPM</p>
+                    <p id="nextTrackBPM" class="text-xl">-</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Key</p>
+                    <p id="nextTrackKey" class="text-xl">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Effects Processing -->
+        <div class="control-panel">
+            <h2 class="text-2xl font-bold mb-4">Effects Processing</h2>
+            <div class="grid grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Reverb</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Wet</label>
+                            <input type="range" id="reverbWet" min="0" max="1" step="0.1" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Room Size</label>
+                            <input type="range" id="reverbRoomSize" min="0" max="1" step="0.1" value="0.5" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Damping</label>
+                            <input type="range" id="reverbDamping" min="0" max="1" step="0.1" value="0.5" class="w-full">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Delay</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Time</label>
+                            <input type="range" id="delayTime" min="0" max="2" step="0.1" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Feedback</label>
+                            <input type="range" id="delayFeedback" min="0" max="1" step="0.1" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Mix</label>
+                            <input type="range" id="delayMix" min="0" max="1" step="0.1" value="0" class="w-full">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Filter</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Cutoff</label>
+                            <input type="range" id="filterCutoff" min="20" max="20000" step="1" value="20000" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Resonance</label>
+                            <input type="range" id="filterResonance" min="0" max="20" step="0.1" value="0" class="w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MIDI Control -->
+        <div class="control-panel">
+            <h2 class="text-2xl font-bold mb-4">MIDI Control</h2>
+            <div class="grid grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Controller Status</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-gray-400">Connected Device</p>
+                            <p id="midiDevice" class="text-xl">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">Status</p>
+                            <p id="midiStatus" class="text-xl">Disconnected</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">MIDI Mapping</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Mod Wheel → Filter Cutoff</label>
+                            <input type="checkbox" id="midiModWheel" class="form-checkbox">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Volume → Reverb Wet</label>
+                            <input type="checkbox" id="midiVolume" class="form-checkbox">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Knob 1 → Delay Time</label>
+                            <input type="checkbox" id="midiKnob1" class="form-checkbox">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Knob 2 → Filter Resonance</label>
+                            <input type="checkbox" id="midiKnob2" class="form-checkbox">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recording -->
+        <div class="control-panel">
+            <h2 class="text-2xl font-bold mb-4">Recording</h2>
+            <div class="grid grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Mix Recording</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Recording Status</label>
+                            <p id="recordingStatus" class="text-xl">Not Recording</p>
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Duration</label>
+                            <p id="recordingDuration" class="text-xl">00:00:00</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Controls</h3>
+                    <div class="space-y-4">
+                        <button id="startRecording" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded w-full">
+                            Start Recording
+                        </button>
+                        <button id="stopRecording" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded w-full" disabled>
+                            Stop Recording
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Harmonic Mixing -->
+        <div class="control-panel">
+            <h2 class="text-2xl font-bold mb-4">Harmonic Mixing</h2>
+            <div class="camelot-wheel" id="camelotWheel">
+                <!-- Camelot wheel positions will be added dynamically -->
+            </div>
+            <div class="text-center mt-4">
+                <p class="text-gray-400">Compatible Keys</p>
+                <p id="compatibleKeys" class="text-xl">-</p>
+            </div>
+        </div>
+
+        <!-- Mixing Controls -->
+        <div class="control-panel">
+            <h2 class="text-2xl font-bold mb-4">Mixing Controls</h2>
+            <div class="grid grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Current Track</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Volume</label>
+                            <input type="range" id="currentVolume" min="0" max="100" value="100" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">EQ Low</label>
+                            <input type="range" id="currentEQLow" min="-12" max="12" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">EQ Mid</label>
+                            <input type="range" id="currentEQMid" min="-12" max="12" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">EQ High</label>
+                            <input type="range" id="currentEQHigh" min="-12" max="12" value="0" class="w-full">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Next Track</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Volume</label>
+                            <input type="range" id="nextVolume" min="0" max="100" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">EQ Low</label>
+                            <input type="range" id="nextEQLow" min="-12" max="12" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">EQ Mid</label>
+                            <input type="range" id="nextEQMid" min="-12" max="12" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">EQ High</label>
+                            <input type="range" id="nextEQHigh" min="-12" max="12" value="0" class="w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mixing Parameters -->
+        <div class="control-panel">
+            <h2 class="text-2xl font-bold mb-4">Mixing Parameters</h2>
+            <div class="grid grid-cols-3 gap-8">
+                <div>
+                    <label class="block text-gray-400">Crossfade Duration (seconds)</label>
+                    <input type="number" id="crossfadeDuration" min="1" max="16" value="8" class="w-full bg-gray-800 rounded px-4 py-2">
+                </div>
+                <div>
+                    <label class="block text-gray-400">Energy Threshold</label>
+                    <input type="range" id="energyThreshold" min="0" max="1" step="0.1" value="0.5" class="w-full">
+                </div>
+                <div>
+                    <label class="block text-gray-400">BPM Threshold</label>
+                    <input type="number" id="bpmThreshold" min="1" max="20" value="10" class="w-full bg-gray-800 rounded px-4 py-2">
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualizations -->
+        <div class="visualization">
+            <h2 class="text-2xl font-bold mb-4">Spectrum Analyzer</h2>
+            <canvas id="spectrumAnalyzer"></canvas>
+        </div>
+
+        <!-- Playlist -->
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold mb-4">Playlist</h2>
+            <div class="bg-gray-800 rounded-lg p-4">
+                <div class="flex justify-between mb-4">
+                    <button id="createPlaylist" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded">
+                        Create Playlist
+                    </button>
+                    <button id="startMixing" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">
+                        Start Mixing
+                    </button>
+                    <button id="stopMixing" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                        Stop Mixing
+                    </button>
+                </div>
+                <div id="playlist" class="space-y-2">
+                    <!-- Playlist items will be added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Stem Controls -->
+        <div class="control-panel">
+            <h2 class="text-2xl font-bold mb-4">Stem Controls</h2>
+            <div class="grid grid-cols-3 gap-8">
+                <div class="stem-controls">
+                    <h3 class="text-xl font-bold mb-4">Vocals</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Volume</label>
+                            <input type="range" id="vocalsVolume" min="0" max="1" step="0.1" value="1" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Pan</label>
+                            <input type="range" id="vocalsPan" min="-1" max="1" step="0.1" value="0" class="w-full">
+                        </div>
+                        <div class="flex space-x-4">
+                            <button id="vocalsSolo" class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">
+                                Solo
+                            </button>
+                            <button id="vocalsMute" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                                Mute
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="stem-controls">
+                    <h3 class="text-xl font-bold mb-4">Drums</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Volume</label>
+                            <input type="range" id="drumsVolume" min="0" max="1" step="0.1" value="1" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Pan</label>
+                            <input type="range" id="drumsPan" min="-1" max="1" step="0.1" value="0" class="w-full">
+                        </div>
+                        <div class="flex space-x-4">
+                            <button id="drumsSolo" class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">
+                                Solo
+                            </button>
+                            <button id="drumsMute" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                                Mute
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="stem-controls">
+                    <h3 class="text-xl font-bold mb-4">Bass</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Volume</label>
+                            <input type="range" id="bassVolume" min="0" max="1" step="0.1" value="1" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Pan</label>
+                            <input type="range" id="bassPan" min="-1" max="1" step="0.1" value="0" class="w-full">
+                        </div>
+                        <div class="flex space-x-4">
+                            <button id="bassSolo" class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">
+                                Solo
+                            </button>
+                            <button id="bassMute" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                                Mute
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automation -->
+        <div class="control-panel">
+            <h2 class="text-2xl font-bold mb-4">Automation</h2>
+            <div class="grid grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Automation Lanes</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Volume</label>
+                            <div id="volumeAutomation" class="automation-lane"></div>
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Filter</label>
+                            <div id="filterAutomation" class="automation-lane"></div>
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Effects</label>
+                            <div id="effectsAutomation" class="automation-lane"></div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Automation Controls</h3>
+                    <div class="space-y-4">
+                        <div class="flex space-x-4">
+                            <button id="recordAutomation" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                                Record
+                            </button>
+                            <button id="clearAutomation" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded">
+                                Clear
+                            </button>
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Smoothing</label>
+                            <input type="range" id="automationSmoothing" min="0" max="1" step="0.1" value="0.5" class="w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Beat Grid -->
+        <div class="control-panel">
+            <h2 class="text-2xl font-bold mb-4">Beat Grid</h2>
+            <div class="grid grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Grid Editor</h3>
+                    <div id="beatGrid" class="beat-grid"></div>
+                    <div class="flex space-x-4 mt-4">
+                        <button id="quantizeGrid" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                            Quantize
+                        </button>
+                        <button id="adjustGrid" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">
+                            Adjust
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Grid Settings</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">BPM</label>
+                            <input type="number" id="gridBPM" min="60" max="200" step="0.1" value="120" class="w-full bg-gray-800 rounded px-2 py-1">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Offset</label>
+                            <input type="number" id="gridOffset" min="-1000" max="1000" step="1" value="0" class="w-full bg-gray-800 rounded px-2 py-1">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Confidence</label>
+                            <input type="range" id="gridConfidence" min="0" max="1" step="0.1" value="0.8" class="w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Effects Chain -->
+        <div class="control-panel">
+            <h2 class="text-2xl font-bold mb-4">Effects Chain</h2>
+            <div class="effects-chain">
+                <div class="effect-block">
+                    <h3 class="text-xl font-bold mb-4">Compressor</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Threshold</label>
+                            <input type="range" id="compThreshold" min="-60" max="0" step="1" value="-20" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Ratio</label>
+                            <input type="range" id="compRatio" min="1" max="20" step="0.1" value="4" class="w-full">
+                        </div>
+                    </div>
+                </div>
+                <div class="effect-block">
+                    <h3 class="text-xl font-bold mb-4">EQ</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Low</label>
+                            <input type="range" id="eqLow" min="-12" max="12" step="0.1" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Mid</label>
+                            <input type="range" id="eqMid" min="-12" max="12" step="0.1" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">High</label>
+                            <input type="range" id="eqHigh" min="-12" max="12" step="0.1" value="0" class="w-full">
+                        </div>
+                    </div>
+                </div>
+                <div class="effect-block">
+                    <h3 class="text-xl font-bold mb-4">Limiter</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-400">Ceiling</label>
+                            <input type="range" id="limiterCeiling" min="-12" max="0" step="0.1" value="-1" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400">Release</label>
+                            <input type="range" id="limiterRelease" min="0.001" max="1" step="0.001" value="0.1" class="w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize WaveSurfer
+        const currentWaveform = WaveSurfer.create({
+            container: '#currentTrack',
+            waveColor: '#4a9eff',
+            progressColor: '#1a73e8',
+            cursorColor: '#ffffff',
+            barWidth: 2,
+            barRadius: 3,
+            responsive: true,
+            height: 100,
+            barGap: 3
+        });
+
+        const nextWaveform = WaveSurfer.create({
+            container: '#nextTrack',
+            waveColor: '#4a9eff',
+            progressColor: '#1a73e8',
+            cursorColor: '#ffffff',
+            barWidth: 2,
+            barRadius: 3,
+            responsive: true,
+            height: 100,
+            barGap: 3
+        });
+
+        // Initialize Spectrum Analyzer
+        const ctx = document.getElementById('spectrumAnalyzer').getContext('2d');
+        const spectrumChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 32}, (_, i) => i),
+                datasets: [{
+                    data: Array(32).fill(0),
+                    backgroundColor: '#4a9eff',
+                    borderColor: '#1a73e8',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1
+                    }
+                },
+                animation: {
+                    duration: 0
+                }
+            }
+        });
+
+        // Initialize Camelot Wheel
+        function initCamelotWheel() {
+            const wheel = document.getElementById('camelotWheel');
+            const positions = [
+                { number: 1, letter: 'A' }, { number: 2, letter: 'A' }, { number: 3, letter: 'A' },
+                { number: 4, letter: 'A' }, { number: 5, letter: 'A' }, { number: 6, letter: 'A' },
+                { number: 7, letter: 'A' }, { number: 8, letter: 'A' }, { number: 9, letter: 'A' },
+                { number: 10, letter: 'A' }, { number: 11, letter: 'A' }, { number: 12, letter: 'A' },
+                { number: 1, letter: 'B' }, { number: 2, letter: 'B' }, { number: 3, letter: 'B' },
+                { number: 4, letter: 'B' }, { number: 5, letter: 'B' }, { number: 6, letter: 'B' },
+                { number: 7, letter: 'B' }, { number: 8, letter: 'B' }, { number: 9, letter: 'B' },
+                { number: 10, letter: 'B' }, { number: 11, letter: 'B' }, { number: 12, letter: 'B' }
+            ];
+
+            positions.forEach((pos, index) => {
+                const angle = (index * 15) * Math.PI / 180;
+                const radius = 120;
+                const x = radius * Math.cos(angle) + 150;
+                const y = radius * Math.sin(angle) + 150;
+
+                const position = document.createElement('div');
+                position.className = 'camelot-position';
+                position.style.left = `${x}px`;
+                position.style.top = `${y}px`;
+                position.textContent = `${pos.number}${pos.letter}`;
+                position.dataset.position = `${pos.number}${pos.letter}`;
+                
+                position.addEventListener('click', () => {
+                    updateCompatibleKeys(pos.number, pos.letter);
+                });
+
+                wheel.appendChild(position);
+            });
+        }
+
+        function updateCompatibleKeys(number, letter) {
+            // Clear previous selections
+            document.querySelectorAll('.camelot-position').forEach(pos => {
+                pos.classList.remove('active', 'compatible');
+            });
+
+            // Mark current position
+            const current = document.querySelector(`[data-position="${number}${letter}"]`);
+            current.classList.add('active');
+
+            // Mark compatible positions
+            const compatible = [
+                `${number}${letter}`,
+                `${(number % 12) + 1}${letter}`,
+                `${((number - 2 + 12) % 12) + 1}${letter}`,
+                `${number}${letter === 'A' ? 'B' : 'A'}`
+            ];
+
+            compatible.forEach(pos => {
+                const element = document.querySelector(`[data-position="${pos}"]`);
+                if (element) {
+                    element.classList.add('compatible');
+                }
+            });
+
+            // Update compatible keys text
+            document.getElementById('compatibleKeys').textContent = compatible.join(', ');
+        }
+
+        // Initialize recording controls
+        let recordingStartTime = 0;
+        let recordingTimer = null;
+
+        document.getElementById('startRecording').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/dj/start_recording', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    document.getElementById('recordingStatus').textContent = 'Recording';
+                    document.getElementById('startRecording').disabled = true;
+                    document.getElementById('stopRecording').disabled = false;
+                    
+                    recordingStartTime = Date.now();
+                    recordingTimer = setInterval(updateRecordingDuration, 1000);
+                }
+            } catch (error) {
+                console.error('Error starting recording:', error);
+            }
+        });
+
+        document.getElementById('stopRecording').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/dj/stop_recording', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    document.getElementById('recordingStatus').textContent = 'Not Recording';
+                    document.getElementById('startRecording').disabled = false;
+                    document.getElementById('stopRecording').disabled = true;
+                    
+                    clearInterval(recordingTimer);
+                    document.getElementById('recordingDuration').textContent = '00:00:00';
+                }
+            } catch (error) {
+                console.error('Error stopping recording:', error);
+            }
+        });
+
+        function updateRecordingDuration() {
+            const duration = Date.now() - recordingStartTime;
+            const hours = Math.floor(duration / 3600000);
+            const minutes = Math.floor((duration % 3600000) / 60000);
+            const seconds = Math.floor((duration % 60000) / 1000);
+            
+            document.getElementById('recordingDuration').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Handle effects controls
+        document.querySelectorAll('input[type="range"]').forEach(input => {
+            input.addEventListener('change', async (e) => {
+                try {
+                    const effect = e.target.id.split(/(?=[A-Z])/)[0];
+                    const parameter = e.target.id.replace(effect, '');
+                    
+                    const response = await fetch('/api/dj/adjust_effect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            effect,
+                            parameter: parameter.charAt(0).toLowerCase() + parameter.slice(1),
+                            value: parseFloat(e.target.value)
+                        })
+                    });
+                    const data = await response.json();
+                    console.log('Effect adjusted:', data);
+                } catch (error) {
+                    console.error('Error adjusting effect:', error);
+                }
+            });
+        });
+
+        // Handle MIDI controls
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', async (e) => {
+                try {
+                    const mapping = e.target.id.replace('midi', '');
+                    
+                    const response = await fetch('/api/dj/set_midi_mapping', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            mapping,
+                            enabled: e.target.checked
+                        })
+                    });
+                    const data = await response.json();
+                    console.log('MIDI mapping updated:', data);
+                } catch (error) {
+                    console.error('Error updating MIDI mapping:', error);
+                }
+            });
+        });
+
+        // Update spectrum analyzer
+        function updateSpectrum(data) {
+            spectrumChart.data.datasets[0].data = data;
+            spectrumChart.update();
+        }
+
+        // Handle library scanning
+        document.getElementById('scanLibrary').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/dj/analyze_library', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        library_path: '/music'
+                    })
+                });
+                const data = await response.json();
+                console.log('Library analyzed:', data);
+            } catch (error) {
+                console.error('Error scanning library:', error);
+            }
+        });
+
+        // Handle playlist creation
+        document.getElementById('createPlaylist').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/dj/create_playlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        duration: 3600,
+                        energy: 0.7
+                    })
+                });
+                const data = await response.json();
+                updatePlaylist(data.playlist);
+            } catch (error) {
+                console.error('Error creating playlist:', error);
+            }
+        });
+
+        // Handle mixing controls
+        document.getElementById('startMixing').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/dj/start_mixing', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        playlist: currentPlaylist
+                    })
+                });
+                const data = await response.json();
+                console.log('Mixing started:', data);
+            } catch (error) {
+                console.error('Error starting mixing:', error);
+            }
+        });
+
+        document.getElementById('stopMixing').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/dj/stop_mixing', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                console.log('Mixing stopped:', data);
+            } catch (error) {
+                console.error('Error stopping mixing:', error);
+            }
+        });
+
+        // Update playlist display
+        function updatePlaylist(playlist) {
+            const playlistElement = document.getElementById('playlist');
+            playlistElement.innerHTML = '';
+            
+            playlist.forEach((track, index) => {
+                const trackElement = document.createElement('div');
+                trackElement.className = 'flex items-center justify-between p-2 bg-gray-700 rounded';
+                trackElement.innerHTML = `
+                    <div>
+                        <p class="font-bold">${track.title}</p>
+                        <p class="text-sm text-gray-400">${track.artist}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm">${track.bpm} BPM</p>
+                        <p class="text-sm text-gray-400">${track.key}</p>
+                    </div>
+                `;
+                playlistElement.appendChild(trackElement);
+            });
+        }
+
+        // Handle parameter changes
+        document.getElementById('crossfadeDuration').addEventListener('change', async (e) => {
+            try {
+                const response = await fetch('/api/dj/adjust_mix', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        crossfade_duration: parseFloat(e.target.value)
+                    })
+                });
+                const data = await response.json();
+                console.log('Mix parameters updated:', data);
+            } catch (error) {
+                console.error('Error updating mix parameters:', error);
+            }
+        });
+
+        // WebSocket connection for real-time updates
+        const ws = new WebSocket('ws://localhost:8000/ws/dj');
+        
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            switch (data.type) {
+                case 'track_update':
+                    updateTrackInfo(data.track);
+                    break;
+                case 'spectrum_update':
+                    updateSpectrum(data.spectrum);
+                    break;
+                case 'playlist_update':
+                    updatePlaylist(data.playlist);
+                    break;
+                case 'midi_update':
+                    updateMIDIStatus(data.device, data.status);
+                    break;
+                case 'recording_update':
+                    updateRecordingStatus(data.status, data.duration);
+                    break;
+            }
+        };
+
+        // Update track information
+        function updateTrackInfo(track) {
+            document.getElementById('trackTitle').textContent = track.title;
+            document.getElementById('trackArtist').textContent = track.artist;
+            document.getElementById('trackBPM').textContent = track.bpm;
+            document.getElementById('trackKey').textContent = track.key;
+            
+            currentWaveform.load(track.file_path);
+        }
+
+        // Update MIDI status
+        function updateMIDIStatus(device, status) {
+            document.getElementById('midiDevice').textContent = device;
+            document.getElementById('midiStatus').textContent = status;
+        }
+
+        // Update recording status
+        function updateRecordingStatus(status, duration) {
+            document.getElementById('recordingStatus').textContent = status;
+            document.getElementById('recordingDuration').textContent = duration;
+        }
+
+        // Initialize
+        async function init() {
+            try {
+                // Initialize Camelot wheel
+                initCamelotWheel();
+                
+                // Load initial library
+                const response = await fetch('/api/dj/analyze_library', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        library_path: '/music'
+                    })
+                });
+                const data = await response.json();
+                console.log('Library loaded:', data);
+            } catch (error) {
+                console.error('Error initializing:', error);
+            }
+        }
+
+        init();
+
+        // New JavaScript for advanced features
+        class AutomationLane {
+            constructor(container) {
+                this.container = container;
+                this.points = [];
+                this.isRecording = false;
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                this.container.addEventListener('click', (e) => {
+                    if (this.isRecording) {
+                        this.addPoint(e.offsetX, e.offsetY);
+                    }
+                });
+            }
+
+            addPoint(x, y) {
+                const point = document.createElement('div');
+                point.className = 'automation-point';
+                point.style.left = `${x}px`;
+                point.style.top = `${y}px`;
+                this.container.appendChild(point);
+                this.points.push({ x, y });
+            }
+
+            clear() {
+                this.points.forEach(point => point.remove());
+                this.points = [];
+            }
+
+            startRecording() {
+                this.isRecording = true;
+            }
+
+            stopRecording() {
+                this.isRecording = false;
+            }
+        }
+
+        class BeatGrid {
+            constructor(container) {
+                this.container = container;
+                this.markers = [];
+                this.bpm = 120;
+                this.offset = 0;
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                this.container.addEventListener('click', (e) => {
+                    this.addMarker(e.offsetX);
+                });
+            }
+
+            addMarker(x) {
+                const marker = document.createElement('div');
+                marker.className = 'beat-marker';
+                marker.style.left = `${x}px`;
+                this.container.appendChild(marker);
+                this.markers.push(marker);
+            }
+
+            quantize() {
+                // Implement beat quantization logic
+            }
+
+            adjust() {
+                // Implement beat adjustment logic
+            }
+
+            clear() {
+                this.markers.forEach(marker => marker.remove());
+                this.markers = [];
+            }
+        }
+
+        // Initialize new features
+        const volumeAutomation = new AutomationLane(document.getElementById('volumeAutomation'));
+        const filterAutomation = new AutomationLane(document.getElementById('filterAutomation'));
+        const effectsAutomation = new AutomationLane(document.getElementById('effectsAutomation'));
+        const beatGrid = new BeatGrid(document.getElementById('beatGrid'));
+
+        // Event listeners for new controls
+        document.getElementById('recordAutomation').addEventListener('click', () => {
+            volumeAutomation.startRecording();
+            filterAutomation.startRecording();
+            effectsAutomation.startRecording();
+        });
+
+        document.getElementById('clearAutomation').addEventListener('click', () => {
+            volumeAutomation.clear();
+            filterAutomation.clear();
+            effectsAutomation.clear();
+        });
+
+        document.getElementById('quantizeGrid').addEventListener('click', () => {
+            beatGrid.quantize();
+        });
+
+        document.getElementById('adjustGrid').addEventListener('click', () => {
+            beatGrid.adjust();
+        });
+
+        // Stem control event listeners
+        ['vocals', 'drums', 'bass'].forEach(stem => {
+            document.getElementById(`${stem}Volume`).addEventListener('input', (e) => {
+                // Update stem volume
+            });
+
+            document.getElementById(`${stem}Pan`).addEventListener('input', (e) => {
+                // Update stem pan
+            });
+
+            document.getElementById(`${stem}Solo`).addEventListener('click', () => {
+                // Toggle stem solo
+            });
+
+            document.getElementById(`${stem}Mute`).addEventListener('click', () => {
+                // Toggle stem mute
+            });
+        });
+
+        // Effects chain event listeners
+        document.getElementById('compThreshold').addEventListener('input', (e) => {
+            // Update compressor threshold
+        });
+
+        document.getElementById('compRatio').addEventListener('input', (e) => {
+            // Update compressor ratio
+        });
+
+        document.getElementById('eqLow').addEventListener('input', (e) => {
+            // Update EQ low band
+        });
+
+        document.getElementById('eqMid').addEventListener('input', (e) => {
+            // Update EQ mid band
+        });
+
+        document.getElementById('eqHigh').addEventListener('input', (e) => {
+            // Update EQ high band
+        });
+
+        document.getElementById('limiterCeiling').addEventListener('input', (e) => {
+            // Update limiter ceiling
+        });
+
+        document.getElementById('limiterRelease').addEventListener('input', (e) => {
+            // Update limiter release
+        });
+    </script>
+</body>
+</html> 
