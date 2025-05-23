@@ -49,6 +49,12 @@ check_requirements() {
         error "npm is not installed. Please install npm first."
     fi
     
+    # Check system resources
+    local total_mem=$(free -m | awk '/^Mem:/{print $2}')
+    if [ "$total_mem" -lt 4096 ]; then
+        warn "System has less than 4GB of RAM. This might affect performance."
+    fi
+    
     log "System requirements met."
 }
 
@@ -73,6 +79,8 @@ validate_environment() {
         "REDIS_HOST"
         "REDIS_PORT"
         "REDIS_PASSWORD"
+        "JWT_SECRET"
+        "GRAFANA_PASSWORD"
     )
     
     for var in "${required_vars[@]}"; do
@@ -110,36 +118,34 @@ start_services() {
     
     # Wait for services to be healthy
     log "Waiting for services to be healthy..."
-    sleep 10
+    sleep 30
     
-    # Check service health
-    if ! docker-compose ps | grep -q "healthy"; then
-        warn "Some services may not be healthy. Check logs with 'docker-compose logs'"
+    # Run health checks
+    if ! ./scripts/health_check.sh; then
+        error "Health checks failed. Check the logs for more information."
     fi
     
-    log "Services started."
+    log "Services started successfully."
 }
 
-# Verify deployment
-verify_deployment() {
-    log "Verifying deployment..."
+# Setup monitoring
+setup_monitoring() {
+    log "Setting up monitoring..."
     
-    # Check API health
-    if ! curl -s http://localhost:8000/health | grep -q "ok"; then
-        error "API health check failed"
+    # Wait for Prometheus to be ready
+    sleep 10
+    
+    # Check if Prometheus is running
+    if ! curl -s http://localhost:9090/-/healthy > /dev/null; then
+        warn "Prometheus is not healthy. Monitoring might not work correctly."
     fi
     
-    # Check WebSocket connection
-    if ! curl -s http://localhost:8001/health | grep -q "ok"; then
-        error "WebSocket health check failed"
+    # Check if Grafana is running
+    if ! curl -s http://localhost:3000/api/health > /dev/null; then
+        warn "Grafana is not healthy. Monitoring dashboard might not be available."
     fi
     
-    # Check frontend
-    if ! curl -s http://localhost:80 | grep -q "LexOS"; then
-        error "Frontend health check failed"
-    fi
-    
-    log "Deployment verification complete."
+    log "Monitoring setup complete."
 }
 
 # Main deployment process
@@ -150,9 +156,15 @@ main() {
     validate_environment
     build_frontend
     start_services
-    verify_deployment
+    setup_monitoring
     
     log "LexOS deployment completed successfully!"
+    log "You can access:"
+    log "- Frontend: http://localhost"
+    log "- API: http://localhost:8000"
+    log "- WebSocket: ws://localhost:8001"
+    log "- Grafana: http://localhost:3000"
+    log "- Prometheus: http://localhost:9090"
 }
 
 # Run main function
