@@ -1,0 +1,109 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          if [ -d "frontend" ] && [ -f "frontend/package.json" ]; then
+            cd frontend && npm ci
+          fi
+
+      - name: Build frontend
+        run: |
+          if [ -d "frontend" ] && [ -f "frontend/package.json" ]; then
+            cd frontend && npm run build
+          fi
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create .env file
+        run: |
+          echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" > .env
+          echo "APP_ENV=PROD" >> .env
+          # Add other environment variables as needed
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            # Create backup
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            BACKUP_DIR="/opt/lexcommand/backups/$TIMESTAMP"
+            mkdir -p $BACKUP_DIR
+            rsync -a --delete /opt/lexcommand/ $BACKUP_DIR/ --exclude backups --exclude venv --exclude '*.pyc' --exclude '__pycache__'
+            
+            # Deploy code
+            mkdir -p /opt/lexcommand
+            rsync -a --delete $GITHUB_WORKSPACE/ /opt/lexcommand/ --exclude venv --exclude '__pycache__' --exclude '*.pyc' --exclude '.git'
+            
+            # Setup Python environment
+            cd /opt/lexcommand
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            
+            # Setup JWT keys if they don't exist
+            sudo mkdir -p /etc/lexcommand/keys
+            if [ ! -f /etc/lexcommand/keys/jwt-private.pem ]; then
+              sudo openssl genpkey -algorithm RSA -out /etc/lexcommand/keys/jwt-private.pem -pkeyopt rsa_keygen_bits:2048
+              sudo openssl rsa -pubout -in /etc/lexcommand/keys/jwt-private.pem -out /etc/lexcommand/keys/jwt-public.pem
+              sudo chmod 600 /etc/lexcommand/keys/jwt-private.pem
+              sudo chmod 644 /etc/lexcommand/keys/jwt-public.pem
+            fi
+            
+            # Setup system user if it doesn't exist
+            if ! id 'lexcommand' &>/dev/null; then
+              sudo useradd -r -s /bin/false lexcommand
+              sudo chown -R lexcommand:lexcommand /opt/lexcommand
+              sudo mkdir -p /etc/lexcommand/keys
+              sudo chown -R lexcommand:lexcommand /etc/lexcommand
+            fi
+            
+            # Setup logging directory
+            sudo mkdir -p /var/log/lexcommand
+            sudo chown -R lexcommand:lexcommand /var/log/lexcommand
+            
+            # Copy and enable systemd service
+            sudo cp /opt/lexcommand/lexcommand.service /etc/systemd/system/
+            sudo systemctl daemon-reload
+            sudo systemctl enable lexcommand
+            
+            # Restart service
+            sudo systemctl restart lexcommand
+            
+            # Check service status
+            sudo systemctl status lexcommand --no-pager
+            
+            # Clean up old backups (keep last 5)
+            if [ -d /opt/lexcommand/backups ]; then
+              ls -1t /opt/lexcommand/backups | tail -n +6 | xargs -I {} rm -rf "/opt/lexcommand/backups/{}"
+            fi
