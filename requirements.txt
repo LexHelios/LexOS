@@ -103,7 +103,6 @@ geopy>=2.4.1
 # Financial Dependencies
 yfinance>=0.2.33
 pandas-ta>=0.3.14b0
-ta-lib>=0.4.28
 ccxt>=4.1.87
 python-binance>=1.0.19
 alpaca-trade-api>=3.0.2
