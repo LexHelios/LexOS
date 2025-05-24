@@ -1,0 +1,172 @@
+services:
+  python-agent-team-service:
+    build:
+      context: ./lexos_deployment_package/agent-team-service
+    container_name: python-agent-team-service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - backend
+    # env_file: ./lexos_deployment_package/agent-team-service/.env  # Uncomment if .env file exists
+    ports:
+      - "8000:8000"  # Exposes FastAPI default port
+
+  python-ai-orchestrator:
+    build:
+      context: ./ai-orchestrator
+    container_name: python-ai-orchestrator
+    restart: unless-stopped
+    depends_on:
+      - python-agent-team-service
+      - postgres
+      - redis
+    networks:
+      - backend
+    # env_file: ./ai-orchestrator/.env  # Uncomment if .env file exists
+
+  python-analytics-service:
+    build:
+      context: ./analytics-service
+    container_name: python-analytics-service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - backend
+    # env_file: ./analytics-service/.env  # Uncomment if .env file exists
+
+  python-digital-twin-service:
+    build:
+      context: ./digital-twin-service
+    container_name: python-digital-twin-service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - backend
+    # env_file: ./digital-twin-service/.env  # Uncomment if .env file exists
+
+  python-gis-service:
+    build:
+      context: ./gis-service
+    container_name: python-gis-service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - backend
+    # env_file: ./gis-service/.env  # Uncomment if .env file exists
+
+  python-llm-service:
+    build:
+      context: ./llm-service
+    container_name: python-llm-service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - backend
+    # env_file: ./llm-service/.env  # Uncomment if .env file exists
+
+  python-oracle-service:
+    build:
+      context: ./oracle-service
+    container_name: python-oracle-service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - backend
+    # env_file: ./oracle-service/.env  # Uncomment if .env file exists
+
+  python-voice-orchestrator:
+    build:
+      context: ./voice-orchestrator
+    container_name: python-voice-orchestrator
+    restart: unless-stopped
+    depends_on:
+      - python-agent-team-service
+      - postgres
+      - redis
+    networks:
+      - backend
+    # env_file: ./voice-orchestrator/.env  # Uncomment if .env file exists
+
+  typescript-root:
+    build:
+      context: .
+    container_name: typescript-root
+    restart: unless-stopped
+    init: true
+    networks:
+      - frontend
+    # env_file: ./.env  # Uncomment if .env file exists
+    ports:
+      - "3000:3000"  # Exposes Node.js app port
+
+  typescript-dashboard:
+    build:
+      context: ./lexos_deployment_package/agent-team-service/src/dashboard
+    container_name: typescript-dashboard
+    restart: unless-stopped
+    init: true
+    networks:
+      - frontend
+    # env_file: ./lexos_deployment_package/agent-team-service/src/dashboard/.env  # Uncomment if .env file exists
+    ports:
+      - "8080:8080"  # Exposes static dashboard port
+
+  # --- External Services ---
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: unless-stopped
+    networks:
+      - backend
+    environment:
+      POSTGRES_DB: lexos_db
+      POSTGRES_USER: lexos_user
+      POSTGRES_PASSWORD: your_secure_password  # Change in production
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lexos_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    networks:
+      - backend
+    command: ["redis-server", "--requirepass", "your_secure_redis_password"]  # Change in production
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis_data:/data
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
