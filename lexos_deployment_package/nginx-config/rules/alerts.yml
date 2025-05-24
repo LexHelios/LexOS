@@ -1,0 +1,142 @@
+groups:
+  - name: lexos
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High CPU usage detected
+          description: "Instance {{ $labels.instance }} has high CPU usage ({{ $value }}%)"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High memory usage detected
+          description: "Instance {{ $labels.instance }} has high memory usage ({{ $value }}%)"
+
+      # High Disk Usage
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High disk usage detected
+          description: "Instance {{ $labels.instance }} has high disk usage ({{ $value }}%)"
+
+      # High GPU Usage
+      - alert: HighGPUUsage
+        expr: gpu_utilization > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High GPU usage detected
+          description: "GPU {{ $labels.device_id }} has high utilization ({{ $value }}%)"
+
+      # High GPU Temperature
+      - alert: HighGPUTemperature
+        expr: gpu_temperature > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High GPU temperature detected
+          description: "GPU {{ $labels.device_id }} has high temperature ({{ $value }}°C)"
+
+      # Service Down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Service is down
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} is down"
+
+      # High Latency
+      - alert: HighLatency
+        expr: rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High latency detected
+          description: "Service {{ $labels.job }} has high latency ({{ $value }}s)"
+
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: High error rate detected
+          description: "Service {{ $labels.job }} has high error rate ({{ $value }}%)"
+
+      # Database Connection Issues
+      - alert: DatabaseConnectionIssues
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Database connection issues
+          description: "Cannot connect to PostgreSQL database"
+
+      # Redis Connection Issues
+      - alert: RedisConnectionIssues
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Redis connection issues
+          description: "Cannot connect to Redis"
+
+      # High Network Traffic
+      - alert: HighNetworkTraffic
+        expr: rate(node_network_receive_bytes_total[5m]) > 1000000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High network traffic detected
+          description: "Instance {{ $labels.instance }} has high network traffic ({{ $value }} bytes/s)"
+
+      # Container Restarts
+      - alert: ContainerRestarts
+        expr: changes(container_start_time_seconds[1h]) > 5
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: Container restarts detected
+          description: "Container {{ $labels.name }} has restarted {{ $value }} times in the last hour"
+
+      # Memory Leak
+      - alert: MemoryLeak
+        expr: rate(container_memory_usage_bytes[1h]) > 0
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: Possible memory leak detected
+          description: "Container {{ $labels.name }} shows signs of memory leak"
+
+      # Disk I/O Issues
+      - alert: DiskIOIssues
+        expr: rate(node_disk_io_time_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Disk I/O issues detected
+          description: "Instance {{ $labels.instance }} has high disk I/O utilization ({{ $value }})" 

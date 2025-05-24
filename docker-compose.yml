@@ -1,18 +1,20 @@
-version: "3.9"
+version: '3.9'
 
 services:
-  backend:
+  # Agent Team Service (Orchestrator/Brain)
+  agent-team:
     build:
-      context: .
+      context: ./lexos_deployment_package/agent-team-service
       dockerfile: Dockerfile
+    command: gunicorn src.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
     ports:
       - "8000:8000"
     environment:
       - ENVIRONMENT=production
       - DOMAIN=lexcommand.ai
       - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=$Overlord0824
-      - REDIS_PASSWORD=secure-redis-pass123
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
       - ALLOWED_ORIGINS=https://lexcommand.ai
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -23,21 +25,208 @@ services:
       - ./logs:/var/log/lexcommand
     depends_on:
       - redis
+      - llm
+      - analytics
+      - gis
+      - oracle
+      - digital-twin
+      - voice-orchestrator
+      - vision
+      - ai-orchestrator
+      - agent-scripts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     restart: unless-stopped
     networks:
-      - lexcommand-network
+      - lexos-network
 
+  # LLM Service (Language/Reasoning Engine)
+  llm:
+    build:
+      context: ./lexos_deployment_package/llm-service
+      dockerfile: Dockerfile
+    command: gunicorn src.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8001
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - lexos-network
+
+  # Analytics Service
+  analytics:
+    build:
+      context: ./lexos_deployment_package/analytics-service
+      dockerfile: Dockerfile
+    command: gunicorn src.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8002
+    ports:
+      - "8002:8002"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - lexos-network
+
+  # GIS Service
+  gis:
+    build:
+      context: ./lexos_deployment_package/gis-service
+      dockerfile: Dockerfile
+    command: gunicorn src.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8003
+    ports:
+      - "8003:8003"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - lexos-network
+
+  # Oracle Service
+  oracle:
+    build:
+      context: ./lexos_deployment_package/oracle-service
+      dockerfile: Dockerfile
+    command: gunicorn src.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8004
+    ports:
+      - "8004:8004"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - lexos-network
+
+  # Digital Twin Service
+  digital-twin:
+    build:
+      context: ./lexos_deployment_package/digital-twin-service
+      dockerfile: Dockerfile
+    command: gunicorn src.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8005
+    ports:
+      - "8005:8005"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - lexos-network
+
+  # Voice Orchestrator
+  voice-orchestrator:
+    build:
+      context: ./lexos_deployment_package/voice-orchestrator
+      dockerfile: Dockerfile
+    command: gunicorn src.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8006
+    ports:
+      - "8006:8006"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - lexos-network
+
+  # Vision Service
+  vision:
+    build:
+      context: ./lexos_deployment_package/vision-service
+      dockerfile: Dockerfile
+    command: gunicorn src.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8007
+    ports:
+      - "8007:8007"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - lexos-network
+
+  # AI Orchestrator
+  ai-orchestrator:
+    build:
+      context: ./lexos_deployment_package/ai-orchestrator
+      dockerfile: Dockerfile
+    command: gunicorn src.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8008
+    ports:
+      - "8008:8008"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - lexos-network
+
+  # Agent Scripts (DevOps, QA, etc.)
+  agent-scripts:
+    build:
+      context: ./lexos_deployment_package/agent-scripts
+      dockerfile: Dockerfile
+    command: gunicorn src.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8009
+    ports:
+      - "8009:8009"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - lexos-network
+
+  # Redis Service
   redis:
     image: redis:7.2-alpine
-    command: redis-server --requirepass secure-redis-pass123
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis-data:/data
     ports:
       - "6379:6379"
     restart: unless-stopped
     networks:
-      - lexcommand-network
+      - lexos-network
 
+  # Nginx Service
   nginx:
     image: nginx:alpine
     ports:
@@ -48,13 +237,13 @@ services:
       - ./ssl:/etc/nginx/ssl:ro
       - ./frontend:/usr/share/nginx/html:ro
     depends_on:
-      - backend
+      - agent-team
     restart: unless-stopped
     networks:
-      - lexcommand-network
+      - lexos-network
 
 networks:
-  lexcommand-network:
+  lexos-network:
     driver: bridge
 
 volumes:

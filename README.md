@@ -88,51 +88,116 @@ LexOS is a fully autonomous AI operations system designed to manage, automate, a
 - DevOps Bottleneck: Deployment scripts, systemd services, and Caddy/Nginx configs
 - Frontend → Backend Bridging: JWT auth, Redis sessions, and WebSocket handling inconsistencies
 
-## 🚀 Getting Started
+## 🚀 Deployment Guide
 
 ### Prerequisites
-- Node.js 18+
-- Python 3.9+
-- Redis
-- Docker (optional)
+- Docker (v20.10+)
+- Docker Compose (v2.0+)
+- Node.js (v16+)
+- npm (v8+)
+- At least 4GB of RAM
+- 20GB of free disk space
 
-### Installation
+### Quick Start
+
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-org/lexos-core.git
-cd lexos-core
+git clone https://github.com/LexHelios/LexOS.git
+cd LexOS
 ```
 
-2. Install frontend dependencies:
+2. Create environment file:
 ```bash
-cd frontend
-npm install
+cp .env.example .env
+# Edit .env with your configuration
 ```
 
-3. Install backend dependencies:
+3. Make scripts executable:
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # or `venv\Scripts\activate` on Windows
-pip install -r requirements.txt
+chmod +x run.sh
+chmod +x scripts/health_check.sh
 ```
 
-4. Set up environment variables:
+4. Run the deployment:
 ```bash
-# Frontend (.env)
-REACT_APP_API_URL=http://localhost:8000
-REACT_APP_SENTRY_DSN=your-sentry-dsn
-REACT_APP_ALLOWED_ORIGINS=http://localhost:3000
+./run.sh
+```
 
-# Backend (.env)
-REDIS_HOST=localhost
-REDIS_PORT=6379
-JWT_SECRET=your-secret
-ALLOWED_ORIGINS=http://localhost:3000
+### Services
+
+The deployment includes the following services:
+
+- Frontend (port 80)
+- API (port 8000)
+- WebSocket (port 8001)
+- PostgreSQL (port 5432)
+- Redis (port 6379)
+- Prometheus (port 9090)
+- Grafana (port 3000)
+
+### Configuration
+
+#### Environment Variables
+
+Create a `.env` file based on `.env.example` with your specific configuration:
+
+```bash
+# Required variables
+REACT_APP_API_BASE_URL=http://localhost:8000
+REACT_APP_WS_URL=ws://localhost:8001
+DB_PASSWORD=your_secure_password
+REDIS_PASSWORD=your_secure_redis_password
+JWT_SECRET=your_secure_jwt_secret
+GRAFANA_PASSWORD=your_secure_grafana_password
+```
+
+#### Security
+
+- Change all default passwords in production
+- Use strong, unique passwords for each service
+- Keep your `.env` file secure and never commit it to version control
+- Regularly update dependencies for security patches
+
+### Monitoring
+
+The deployment includes Prometheus and Grafana for monitoring:
+
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3000 (default credentials: admin/admin)
+
+### Health Checks
+
+Run health checks manually:
+```bash
+./scripts/health_check.sh
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+1. **Services not starting**
+   - Check Docker logs: `docker-compose logs`
+   - Verify environment variables
+   - Check system resources
+
+2. **Database connection issues**
+   - Verify PostgreSQL is running: `docker-compose ps db`
+   - Check database logs: `docker-compose logs db`
+
+3. **Redis connection issues**
+   - Verify Redis is running: `docker-compose ps redis`
+   - Check Redis logs: `docker-compose logs redis`
+
+#### Logs
+
+View logs for specific services:
+```bash
+docker-compose logs [service_name]
 ```
 
 ## 📞 Support
 For support, email support@lexcommand.ai or join our Slack channel.
 
 ## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

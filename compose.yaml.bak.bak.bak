@@ -1,0 +1,173 @@
+services:
+  python-agent-team-service:
+    build:
+      context: ./lexos_deployment_package/agent-team-service
+    container_name: python-agent-team-service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - lexos-net
+    ports:
+      - "8000:8000"  # Exposed by Dockerfile
+    # env_file: ./.env  # Uncomment if .env file exists in agent-team-service
+
+  typescript-agent-team-service-dashboard:
+    build:
+      context: ./lexos_deployment_package/agent-team-service/src/dashboard
+    container_name: typescript-agent-team-service-dashboard
+    restart: unless-stopped
+    init: true
+    networks:
+      - lexos-net
+    ports:
+      - "3001:3000"  # Expose dashboard on 3001 (host) -> 3000 (container)
+    # env_file: ./.env  # Uncomment if .env file exists in dashboard
+    # Note: Set REACT_APP_API_BASE_URL to point to the backend if needed
+
+  python-agent-scripts:
+    build:
+      context: ./lexos_deployment_package/agent-scripts
+    container_name: python-agent-scripts
+    restart: unless-stopped
+    networks:
+      - lexos-net
+    ports:
+      - "8009:8009"  # Exposed by Dockerfile
+    # env_file: ./.env  # Uncomment if .env file exists in agent-scripts
+
+  python-ai-orchestrator:
+    build:
+      context: ./ai-orchestrator
+    container_name: python-ai-orchestrator
+    restart: unless-stopped
+    networks:
+      - lexos-net
+    # env_file: ./.env  # Uncomment if .env file exists in ai-orchestrator
+
+  python-analytics-service:
+    build:
+      context: ./analytics-service
+    container_name: python-analytics-service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - lexos-net
+    # env_file: ./.env  # Uncomment if .env file exists in analytics-service
+
+  python-digital-twin-service:
+    build:
+      context: ./digital-twin-service
+    container_name: python-digital-twin-service
+    restart: unless-stopped
+    networks:
+      - lexos-net
+    # env_file: ./.env  # Uncomment if .env file exists in digital-twin-service
+
+  python-gis-service:
+    build:
+      context: ./gis-service
+    container_name: python-gis-service
+    restart: unless-stopped
+    networks:
+      - lexos-net
+    # env_file: ./.env  # Uncomment if .env file exists in gis-service
+
+  python-llm-service:
+    build:
+      context: ./llm-service
+    container_name: python-llm-service
+    restart: unless-stopped
+    networks:
+      - lexos-net
+    # env_file: ./.env  # Uncomment if .env file exists in llm-service
+
+  python-oracle-service:
+    build:
+      context: ./oracle-service
+    container_name: python-oracle-service
+    restart: unless-stopped
+    networks:
+      - lexos-net
+    # env_file: ./.env  # Uncomment if .env file exists in oracle-service
+
+  python-vision-service:
+    build:
+      context: ./vision-service
+    container_name: python-vision-service
+    restart: unless-stopped
+    networks:
+      - lexos-net
+    # env_file: ./.env  # Uncomment if .env file exists in vision-service
+
+  python-voice-orchestrator:
+    build:
+      context: ./voice-orchestrator
+    container_name: python-voice-orchestrator
+    restart: unless-stopped
+    networks:
+      - lexos-net
+    # env_file: ./.env  # Uncomment if .env file exists in voice-orchestrator
+
+  typescript-src:
+    build:
+      context: ./src
+    container_name: typescript-src
+    restart: unless-stopped
+    init: true
+    networks:
+      - lexos-net
+    ports:
+      - "3002:3000"  # Expose on 3002 (host) -> 3000 (container)
+    # env_file: ./.env  # Uncomment if .env file exists in src
+
+  # --- External Services ---
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: unless-stopped
+    networks:
+      - lexos-net
+    environment:
+      POSTGRES_DB: lexos_db
+      POSTGRES_USER: lexos_user
+      POSTGRES_PASSWORD: your_secure_password_here  # Change in production
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    networks:
+      - lexos-net
+    command: ["redis-server", "--requirepass", "your_redis_password_here"]  # Change in production
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# --- Networks ---
+networks:
+  lexos-net:
+    driver: bridge
+
+# --- Volumes ---
+volumes:
+  postgres_data:
+  redis_data:

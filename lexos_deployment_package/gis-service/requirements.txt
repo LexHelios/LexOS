@@ -1,0 +1,56 @@
+# Core dependencies
+fastapi>=0.100.0
+uvicorn>=0.22.0
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+redis>=4.5.0
+psycopg2-binary>=2.9.0
+SQLAlchemy>=2.0.0
+alembic>=1.11.0
+
+# GIS dependencies
+GDAL>=3.6.0
+geopandas>=0.13.0
+shapely>=2.0.0
+pyproj>=3.6.0
+rasterio>=1.3.0
+fiona>=1.9.0
+geopy>=2.3.0
+folium>=0.14.0
+mapbox-vector-tile>=1.2.0
+pygeos>=0.13.0
+
+# Data processing
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+scikit-learn>=1.2.0
+
+# Monitoring and logging
+prometheus-client>=0.17.0
+python-json-logger>=2.0.0
+structlog>=23.1.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+
+# Security
+cryptography>=41.0.0
+python-jose>=3.3.0
+passlib>=1.7.4
+bcrypt>=4.0.1
+
+# API documentation
+swagger-ui-bundle>=0.0.9
+python-multipart>=0.0.6
+
+# Caching
+redis>=4.5.0
+aioredis>=2.0.0
+
+# Utilities
+python-dateutil>=2.8.2
+pytz>=2023.3
+tqdm>=4.65.0 

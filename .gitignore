@@ -1,3 +1,12 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
 # Python
 __pycache__/
 *.py[cod]
@@ -20,7 +29,6 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
-.env
 venv/
 ENV/
 
@@ -29,23 +37,70 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.pnpm-debug.log*
+.next/
+out/
+build/
+dist/
 
-# IDE
+# IDEs and editors
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
+.DS_Store
 
-# OS
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Build artifacts
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.dylib
+*.dll
+
+# Database
+*.sqlite3
+*.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# System Files
 .DS_Store
 Thumbs.db
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Dependencies
+/.pnp
+.pnp.js
 
 # Project specific
-*.log
 *.pem
 ssl/
-backend.zip 
+backend.zip
