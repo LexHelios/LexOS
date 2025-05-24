@@ -1,52 +1,106 @@
-# LexCommand Shadow Autonomy
+# LexOS - Autonomous AI Operations System
 
-A real-time monitoring and command-and-control dashboard for autonomous systems.
+## 🔷 Core Purpose
+LexOS is a fully autonomous AI operations system designed to manage, automate, and optimize all aspects of multifamily housing, AI infrastructure, and business intelligence. It's a private, sovereign AGI-like command platform that replaces SaaS dependency, broker inefficiency, and manual decision-making with real-time intelligence, automation, and action.
 
-## Features
+## 🎯 Target Users
+- **Primary**: Vince Sharma (Overlord) – owner/operator of multifamily real estate and AI infrastructure
+- **Secondary**: The Sharma family, trusted staff, AI agents, and select partners (property managers, DJs, engineers)
+- **Tertiary**: Future tenants, clients, investors, and governmental partners via automation portals
 
-- Real-time system metrics and insights
-- AI-powered anomaly detection
-- Service dependency visualization
-- Audit logging and traceability
-- Role-based access control
-- Dark mode support
-- Responsive design
+## 🚀 Key Features
+- Autonomous task execution (leasing, collections, repairs, reporting)
+- Voice + dashboard command interface (LexCommand.ai)
+- Integration with Rent Manager, Google, Flowith.io, and financial APIs
+- AI agent council (Shadow, Nova, Atlas, Orion) for delegated workflows
+- Secure hosting on H100, B200, A6000 or cloud backup nodes
+- Custom-built music remixing + media engine (for DJ & promo use)
+- Asset protection and investment analysis modules
 
-## Tech Stack
+## 🏆 Success Metrics
+- LexCommand becomes daily command hub
+- 90%+ reduction in repetitive property management tasks
+- AI identifies and executes profitable deals autonomously
+- Entire Sharma family trusts, uses, and expands LexOS independently
 
-### Frontend
-- React 18
-- TypeScript
-- Tailwind CSS
-- Framer Motion
-- React Query
-- Zustand
-- WebSocket
-- Sentry
+## 🧱 Technical Architecture
 
-### Backend
-- FastAPI
-- Redis
-- JWT Authentication
-- OpenTelemetry
-- Prometheus
-- WebSocket
+### 🖥️ Frontend Requirements
+- React + Vite (LexCommand interface)
+- JWT Auth with refresh tokens
+- WebSocket live updates
+- Audio input support + AI agent chat stream
 
-## Getting Started
+### 🛠️ Backend Services
+- FastAPI backend (main.py) with:
+  - /login
+  - /reason
+  - /health
+  - /metrics
+  - /ws (WebSockets)
+- Redis (for session + job tracking)
+- Postgres (optional for scale)
+- Gunicorn + systemd + Caddy for production
+
+### 💾 Data Storage
+- JSON logs for agent decisions
+- Redis for volatile memory
+- GitHub (code + memory_archive.md for context)
+- S3 or local file system for uploads/downloads
+
+### 🧠 AI/ML Components
+- GPT-4.1 via OpenAI API
+- Claude, Groq, Gemini (via API trigger agents)
+- Devstral running on local FastAPI (127.0.0.1:7860)
+- Flowith.io agent orchestration (external control)
+
+### 🔌 Integration Points
+- Rent Manager
+- Google Workspace
+- Flowith.io API
+- GitHub/Git Actions
+- Vultr, RunPod, TensorDock control scripts
+
+## 🧩 Development Phases
+
+### ✅ Phase 1: MVP (Almost Done)
+- Working backend (FastAPI + Redis + JWT)
+- Working frontend (React + WebSocket + Auth UI)
+- H100 + A6000 hosting ready
+- GitHub deployment infrastructure live
+- Final deployment script for full live push (Caddy, systemd)
+
+### 🔜 Phase 2: Core Features
+- AI Agent Council logic per task (Shadow, Nova, Orion, etc.)
+- Task scheduling, job persistence, live job manager
+- Audio input + vocal command execution
+- Mission_X endpoint to receive commands from dashboard
+
+### 🔮 Phase 3: Advanced Features
+- Self-healing watchdog + sentinel daemon
+- Music Engine: Remix manager for DJ use
+- Flowith.io + Rent Manager integration
+- Financial intelligence + LIHTC property scoring AI
+
+## ⚠️ Current Roadblocks
+- Vision-to-Deployment Gap: Lack of clear, structured, and finished MVP pipeline
+- Overuse of Tools: Integration complexity with multiple tools (Flowith, Copilot, Claude, Cursor, Manus, Devstral)
+- DevOps Bottleneck: Deployment scripts, systemd services, and Caddy/Nginx configs
+- Frontend → Backend Bridging: JWT auth, Redis sessions, and WebSocket handling inconsistencies
+
+## 🚀 Getting Started
 
 ### Prerequisites
-
 - Node.js 18+
 - Python 3.9+
 - Redis
 - Docker (optional)
 
 ### Installation
-
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-org/lexcommand-shadow-autonomy.git
-cd lexcommand-shadow-autonomy
+git clone https://github.com/your-org/lexos-core.git
+cd lexos-core
 ```
 
 2. Install frontend dependencies:
@@ -77,86 +131,8 @@ JWT_SECRET=your-secret
 ALLOWED_ORIGINS=http://localhost:3000
 ```
 
-### Development
-
-1. Start the backend server:
-```bash
-cd backend
-uvicorn main:app --reload
-```
-
-2. Start the frontend development server:
-```bash
-cd frontend
-npm start
-```
-
-3. Access the application at `http://localhost:3000`
-
-## Testing
-
-### Frontend Tests
-```bash
-cd frontend
-npm test
-npm run test:coverage
-```
-
-### Backend Tests
-```bash
-cd backend
-pytest
-pytest --cov
-```
-
-## Deployment
-
-### Frontend
-The frontend is deployed using Cloudflare Pages. The deployment is automated through GitHub Actions.
-
-### Backend
-The backend is deployed using Docker and Kubernetes. See the deployment guide for more details.
-
-## Security
-
-- CSRF Protection
-- XSS Prevention
-- Rate Limiting
-- JWT Authentication
-- Role-based Access Control
-- Security Headers
-- Input Validation
-- Regular Security Scans
-
-## Monitoring
-
-- Sentry for error tracking
-- Prometheus for metrics
-- OpenTelemetry for tracing
-- Performance monitoring
-- User analytics
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
+## 📞 Support
 For support, email support@lexcommand.ai or join our Slack channel.
 
-## Acknowledgments
-
-- [React](https://reactjs.org/)
-- [FastAPI](https://fastapi.tiangolo.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [Sentry](https://sentry.io/)
-- [OpenTelemetry](https://opentelemetry.io/) 
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
