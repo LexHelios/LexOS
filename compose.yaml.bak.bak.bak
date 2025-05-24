@@ -9,10 +9,22 @@ services:
       - redis
     networks:
       - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in agent-team-service
-    # Exposes FastAPI default port
     ports:
-      - "8000:8000"
+      - "8000:8000"  # Exposed by Dockerfile
+    # env_file: ./.env  # Uncomment if .env file exists in agent-team-service
+
+  typescript-agent-team-service-dashboard:
+    build:
+      context: ./lexos_deployment_package/agent-team-service/src/dashboard
+    container_name: typescript-agent-team-service-dashboard
+    restart: unless-stopped
+    init: true
+    networks:
+      - lexos-net
+    ports:
+      - "3001:3000"  # Expose dashboard on 3001 (host) -> 3000 (container)
+    # env_file: ./.env  # Uncomment if .env file exists in dashboard
+    # Note: Set REACT_APP_API_BASE_URL to point to the backend if needed
 
   python-agent-scripts:
     build:
@@ -21,10 +33,9 @@ services:
     restart: unless-stopped
     networks:
       - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in agent-scripts
-    # Exposes Uvicorn/Gunicorn port
     ports:
-      - "8009:8009"
+      - "8009:8009"  # Exposed by Dockerfile
+    # env_file: ./.env  # Uncomment if .env file exists in agent-scripts
 
   python-ai-orchestrator:
     build:
@@ -40,6 +51,9 @@ services:
       context: ./analytics-service
     container_name: python-analytics-service
     restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
     networks:
       - lexos-net
     # env_file: ./.env  # Uncomment if .env file exists in analytics-service
@@ -80,6 +94,15 @@ services:
       - lexos-net
     # env_file: ./.env  # Uncomment if .env file exists in oracle-service
 
+  python-vision-service:
+    build:
+      context: ./vision-service
+    container_name: python-vision-service
+    restart: unless-stopped
+    networks:
+      - lexos-net
+    # env_file: ./.env  # Uncomment if .env file exists in vision-service
+
   python-voice-orchestrator:
     build:
       context: ./voice-orchestrator
@@ -97,12 +120,11 @@ services:
     init: true
     networks:
       - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in src
-    # Exposes default Node.js port
     ports:
-      - "3000:3000"
+      - "3002:3000"  # Expose on 3002 (host) -> 3000 (container)
+    # env_file: ./.env  # Uncomment if .env file exists in src
 
-  # External services required by the stack
+  # --- External Services ---
   postgres:
     image: postgres:latest
     container_name: postgres
@@ -110,16 +132,18 @@ services:
     networks:
       - lexos-net
     environment:
-      POSTGRES_USER: lexos_user
-      POSTGRES_PASSWORD: your_secure_password_here  # Set in .env or override
       POSTGRES_DB: lexos_db
+      POSTGRES_USER: lexos_user
+      POSTGRES_PASSWORD: your_secure_password_here  # Change in production
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U lexos_user"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
 
   redis:
     image: redis:latest
@@ -127,19 +151,23 @@ services:
     restart: unless-stopped
     networks:
       - lexos-net
-    command: ["redis-server", "--requirepass", "your_redis_password_here"]  # Set in .env or override
+    command: ["redis-server", "--requirepass", "your_redis_password_here"]  # Change in production
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - redis-data:/data
 
+# --- Networks ---
 networks:
   lexos-net:
     driver: bridge
 
+# --- Volumes ---
 volumes:
-  postgres-data:
-  redis-data:
+  postgres_data:
+  redis_data:

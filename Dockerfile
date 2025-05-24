@@ -1,23 +1,26 @@
-# Use Node.js LTS version
-FROM node:18-alpine
+FROM python:3.11-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-RUN npm install
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
-COPY . .
+# Copy the package
+COPY lexos_deployment_package/ lexos_deployment_package/
 
-# Build TypeScript code
-RUN npm run build
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PORT=8000
 
-# Expose port
-EXPOSE 3000
+# Expose the port
+EXPOSE 8000
 
-# Start the application
-CMD ["npm", "start"] 
+# Run the application
+CMD ["gunicorn", "lexos_deployment_package.main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"] 
