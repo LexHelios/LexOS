@@ -2,6 +2,10 @@
 .env
 .env.*
 !.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Python
 __pycache__/
@@ -24,6 +28,9 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+venv/
+ENV/
 
 # Node
 node_modules/
@@ -84,29 +91,16 @@ htmlcov/
 # System Files
 .DS_Store
 Thumbs.db
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 
 # Dependencies
 /.pnp
 .pnp.js
 
-# Environment files
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Editor directories and files
-*.swp
-*.swo
-
-# OS generated files
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Virtual Environment
-venv/
-ENV/ 
+# Project specific
+*.pem
+ssl/
+backend.zip

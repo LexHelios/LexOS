@@ -1,0 +1,50 @@
+# YAML placeholder for deploy.yml
+
+name: Deploy to Vultr
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VULTR_IP }} >> ~/.ssh/known_hosts
+
+      - name: Install Vultr CLI
+        run: |
+          curl -L https://github.com/vultr/vultr-cli/releases/download/v3.4.0/vultr-cli_v3.4.0_linux_amd64.tar.gz -o vultr-cli.tar.gz
+          tar xzf vultr-cli.tar.gz
+          sudo mv vultr-cli /usr/local/bin/vultr
+          rm vultr-cli.tar.gz
+
+      - name: Configure Vultr CLI
+        run: vultr config set api-key ${{ secrets.VULTR_API_KEY }}
+
+      - name: Deploy Application
+        run: |
+          chmod +x scripts/deploy.sh
+          ./scripts/deploy.sh
+
+      - name: Verify Deployment
+        run: |
+          curl -s https://${{ secrets.DOMAIN }}/health | grep -q "healthy" || exit 1
+
+      - name: Notify on Success
+        if: success()
+        run: |
+          echo "Deployment successful! Application is available at https://${{ secrets.DOMAIN }}"
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "Deployment failed! Check the logs for details."
