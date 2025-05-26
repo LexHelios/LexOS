@@ -1,23 +1,13 @@
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AppRoutes } from './routes';
+import CyberpunkDashboard from './components/CyberpunkDashboard';
+import './styles/cyberpunk.css';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-    },
-  },
-});
-
-export const App: React.FC = () => {
+const App: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <div className="min-h-screen bg-cyber-bg">
+      <CyberpunkDashboard />
+    </div>
   );
-}; 
+};
+
+export default App; 

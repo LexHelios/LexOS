@@ -9,7 +9,7 @@ import time
 import logging
 import argparse
 import subprocess
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import asyncio
 import aiohttp
 import psutil
@@ -18,20 +18,25 @@ from typing import Dict, Any, List
 from base_agent import BaseAgent
 
 # Configure logging
+LOG_PATH = "/workspace/logs/maintenance_agent.log"
+os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("/app/maintenance_agent.log"),
-        logging.StreamHandler()
+        logging.FileHandler(LOG_PATH),
+        logging.StreamHandler(sys.stdout)
     ]
 )
+logger = logging.getLogger("maintenance_agent")
 
-logger = logging.getLogger("Maintenance-Agent")
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8080")
+HEARTBEAT_URL = f"{API_BASE_URL}/api/v1/agents/heartbeat"
 
 class MaintenanceAgent(BaseAgent):
     def __init__(self):
-        super().__init__("maintenance")
+        super().__init__(agent_name="maintenance")
         self.maintenance_tasks = {
             "disk_cleanup": self._cleanup_disk,
             "log_rotation": self._rotate_logs,
@@ -40,6 +45,21 @@ class MaintenanceAgent(BaseAgent):
             "security_updates": self._check_security_updates,
             "database_maintenance": self._maintain_database
         }
+        logger.info("maintenance agent started")
+
+    async def send_heartbeat(self):
+        payload = {
+            "agent_name": self.agent_name,
+            "status": "online",
+            "timestamp": datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
+        }
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(HEARTBEAT_URL, json=payload) as resp:
+                    if resp.status != 200:
+                        logger.error(f"Heartbeat failed: {resp.status} {await resp.text()}")
+        except Exception as e:
+            logger.error(f"Error sending heartbeat: {e}")
 
     async def _execute_task_impl(self, task_type: str, task_data: Dict[str, Any]) -> Dict[str, Any]:
         """Execute maintenance-specific tasks"""
@@ -325,19 +345,18 @@ class MaintenanceAgent(BaseAgent):
             logger.error(f"Error maintaining database: {str(e)}")
             raise
 
+    async def run(self):
+        while True:
+            await self.send_heartbeat()
+            await asyncio.sleep(60)
+
 async def main():
     """Main entry point for the maintenance agent"""
     agent = MaintenanceAgent()
     try:
-        await agent.start()
-        
-        # Keep the agent running
-        while True:
-            await asyncio.sleep(1)
+        await agent.run()
     except KeyboardInterrupt:
-        logger.info("Shutting down maintenance agent...")
-    finally:
-        await agent.stop()
+        logger.info("maintenance agent stopped by user")
 
 if __name__ == "__main__":
     asyncio.run(main())
