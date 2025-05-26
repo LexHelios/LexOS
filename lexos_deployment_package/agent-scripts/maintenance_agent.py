@@ -15,7 +15,9 @@ import aiohttp
 import psutil
 import shutil
 from typing import Dict, Any, List
-from base_agent import BaseAgent
+from agent_scripts.base_agent import BaseAgent
+from fastapi import FastAPI
+from routes.agent_routes import router as agent_router
 
 # Configure logging
 LOG_PATH = "/workspace/logs/maintenance_agent.log"
@@ -36,7 +38,10 @@ HEARTBEAT_URL = f"{API_BASE_URL}/api/v1/agents/heartbeat"
 
 class MaintenanceAgent(BaseAgent):
     def __init__(self):
-        super().__init__(agent_name="maintenance")
+        try:
+            super().__init__("maintenance")
+        except TypeError:
+            super().__init__()
         self.maintenance_tasks = {
             "disk_cleanup": self._cleanup_disk,
             "log_rotation": self._rotate_logs,
@@ -49,7 +54,7 @@ class MaintenanceAgent(BaseAgent):
 
     async def send_heartbeat(self):
         payload = {
-            "agent_name": self.agent_name,
+            "agent_name": self.agent_type,
             "status": "online",
             "timestamp": datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
         }
@@ -360,3 +365,23 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="LexOS API",
+    description="LexOS Intelligent Property Management System API",
+    version="1.0.0"
+)
+
+# Include the agent heartbeat router
+app.include_router(agent_router)
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
+@app.on_event("startup")
+async def list_routes():
+    for route in app.routes:
+        logging.info(f"🔗 Registered route: {route.path}")

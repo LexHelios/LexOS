@@ -3,6 +3,7 @@ module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -12,7 +13,11 @@ module.exports = {
         'cyber-yellow': '#ffe600',
         'cyber-bg': '#0f1021',
         'cyber-magenta': '#d726ff',
-        'military-green': '#00ff99',
+        'military-green': {
+          light: '#00ff00',
+          DEFAULT: '#00cc00',
+          dark: '#006400',
+        },
         'tactical-orange': '#ffae00',
         'hud-gray': '#23272e',
       },
@@ -43,7 +48,5 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-  ],
+  plugins: [],
 } 

@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .military-panel {
+    @apply p-4 rounded-lg border-2 border-green-500 bg-black bg-opacity-90;
+  }
+
+  .military-heading {
+    @apply text-green-500 font-mono text-lg font-bold tracking-wider;
+  }
+
+  .military-btn {
+    @apply px-4 py-2 bg-green-500 text-black font-mono font-bold rounded hover:bg-green-600 transition-colors;
+  }
+
+  .terminal-log {
+    @apply font-mono text-sm overflow-y-auto p-2 bg-black rounded;
+  }
+
+  /* Luxury theme styles */
+  .gold-theme {
+    @apply bg-gradient-to-r from-gold-light via-gold to-gold-dark;
+  }
+
+  .platinum-theme {
+    @apply bg-gradient-to-r from-platinum-light via-platinum to-platinum-dark;
+  }
+
+  .luxury-button {
+    @apply px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl;
+  }
+
+  .luxury-panel {
+    @apply p-4 rounded-lg border-2 bg-opacity-90 shadow-xl;
+  }
+}
+
+/* Custom scrollbar for terminal logs */
+.terminal-log::-webkit-scrollbar {
+  width: 8px;
+}
+
+.terminal-log::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.terminal-log::-webkit-scrollbar-thumb {
+  background: #00ff00;
+  border-radius: 4px;
+}
+
+.terminal-log::-webkit-scrollbar-thumb:hover {
+  background: #00cc00;
+}
+
+/* Luxury theme animations */
+@keyframes shine {
+  from {
+    background-position: 200% center;
+  }
+  to {
+    background-position: -200% center;
+  }
+}
+
+.shine-effect {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shine 2s linear infinite;
+} 

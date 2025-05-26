@@ -1,12 +1,22 @@
 import React from 'react';
-import CyberpunkDashboard from './components/CyberpunkDashboard';
-import './styles/cyberpunk.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
 
 const App: React.FC = () => {
   return (
-    <div className="min-h-screen bg-cyber-bg">
-      <CyberpunkDashboard />
-    </div>
+    <Router>
+      <ThemeProvider>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Dashboard />} />
+          </Routes>
+        </AuthProvider>
+      </ThemeProvider>
+    </Router>
   );
 };
 
