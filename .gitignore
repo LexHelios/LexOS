@@ -42,6 +42,8 @@ yarn-error.log*
 out/
 build/
 dist/
+dist-ssr
+*.local
 
 # IDEs and editors
 .idea/
@@ -50,6 +52,11 @@ dist/
 *.swo
 *~
 .DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # Docker
 .docker/
@@ -61,6 +68,8 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # Testing
 coverage/
@@ -104,3 +113,6 @@ ehthumbs.db
 *.pem
 ssl/
 backend.zip
+
+# TypeScript cache
+*.tsbuildinfo

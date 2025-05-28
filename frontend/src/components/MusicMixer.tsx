@@ -16,6 +16,9 @@ import LibraryManager from './LibraryManager';
 import HardwareController from './HardwareController';
 import VideoMixer from './VideoMixer';
 import { AudioVisualizer } from './AudioVisualizer';
+import { useMusicStore as useMusicStoreContext } from '../contexts/StoreContext';
+import { Mix, Track, Transition } from '../types/music';
+import * as Tone from 'tone';
 
 interface Deck {
   id: string;
@@ -30,8 +33,12 @@ interface Deck {
   speed: number;
 }
 
-const MusicMixer: React.FC = () => {
-  const audioRef = useRef<HTMLAudioElement>(null);
+interface MusicMixerProps {
+  onMixUpdate?: (mix: Mix) => void;
+}
+
+const MusicMixer: React.FC<MusicMixerProps> = ({ onMixUpdate }) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showTransitionSettings, setShowTransitionSettings] = useState(false);
@@ -74,6 +81,7 @@ const MusicMixer: React.FC = () => {
   ]);
   const [masterBPM, setMasterBPM] = useState<number | null>(null);
   const [selectedDeck, setSelectedDeck] = useState<string>('deck1');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -171,21 +179,16 @@ const MusicMixer: React.FC = () => {
   }, [selectedTrackIndex, currentMix, updateMix]);
 
   const handleAutoCompose = useCallback(async () => {
-    setIsAutoComposing(true);
+    if (!currentMix) return;
+    setIsProcessing(true);
     try {
-      // Simulate AI composition process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const suggestions = [
-        "Adding high-energy transition at 1:30",
-        "Matching BPM progression: 120 → 128 → 135",
-        "Key modulation: C → G → D",
-        "Genre blend: House → Techno → Trance"
-      ];
-      setAiSuggestions(suggestions);
+      // Auto-compose logic here
+    } catch (error) {
+      console.error('Auto-compose failed:', error);
     } finally {
-      setIsAutoComposing(false);
+      setIsProcessing(false);
     }
-  }, []);
+  }, [currentMix]);
 
   // Simulate Lex talking when processing commands
   useEffect(() => {
@@ -357,6 +360,133 @@ const MusicMixer: React.FC = () => {
       return deck;
     }));
   }, []);
+
+  const handleMixUpdate = useCallback((updates: Partial<Mix>) => {
+    if (!currentMix) return;
+    updateMix(currentMix.id, { ...currentMix, ...updates });
+  }, [currentMix, updateMix]);
+
+  const handleTransitionUpdate = useCallback((transitionId: string, updates: Partial<Transition>) => {
+    if (!currentMix) return;
+    const updatedTracks = currentMix.tracks.map(track => ({
+      ...track,
+      transitions: track.transitions.map(t => 
+        t.id === transitionId ? { ...t, ...updates } : t
+      )
+    }));
+    updateMix(currentMix.id, { ...currentMix, tracks: updatedTracks });
+  }, [currentMix, updateMix]);
+
+  const handleEffectUpdate = useCallback((effectId: string, updates: Partial<any>) => {
+    if (!currentMix) return;
+    const updatedTracks = currentMix.tracks.map(track => ({
+      ...track,
+      effects: track.effects.map(e => 
+        e.id === effectId ? { ...e, ...updates } : e
+      )
+    }));
+    updateMix(currentMix.id, { ...currentMix, tracks: updatedTracks });
+  }, [currentMix, updateMix]);
+
+  const handleTrackUpdate = useCallback((trackId: string, updates: Partial<Track>) => {
+    if (!currentMix) return;
+    const updatedTracks = currentMix.tracks.map(track => 
+      track.id === trackId ? { ...track, ...updates } : track
+    );
+    updateMix(currentMix.id, { ...currentMix, tracks: updatedTracks });
+  }, [currentMix, updateMix]);
+
+  const handleAddTrack = useCallback(() => {
+    if (!currentMix) return;
+    const newTrack: Track = {
+      id: Date.now().toString(),
+      name: `Track ${currentMix.tracks.length + 1}`,
+      audioUrl: '',
+      volume: 1,
+      pan: 0,
+      effects: [],
+      transitions: [],
+      analysis: {},
+      metadata: {}
+    };
+    updateMix(currentMix.id, {
+      ...currentMix,
+      tracks: [...currentMix.tracks, newTrack]
+    });
+  }, [currentMix, updateMix]);
+
+  const handleRemoveTrack = useCallback((trackId: string) => {
+    if (!currentMix) return;
+    updateMix(currentMix.id, {
+      ...currentMix,
+      tracks: currentMix.tracks.filter(t => t.id !== trackId)
+    });
+  }, [currentMix, updateMix]);
+
+  const handleAddTransition = useCallback((trackId: string, type: string) => {
+    if (!currentMix) return;
+    const newTransition: Transition = {
+      id: Date.now().toString(),
+      type,
+      duration: 1000,
+      targetTrackId: '',
+      parameters: {}
+    };
+    const updatedTracks = currentMix.tracks.map(track => 
+      track.id === trackId 
+        ? { ...track, transitions: [...track.transitions, newTransition] }
+        : track
+    );
+    updateMix(currentMix.id, { ...currentMix, tracks: updatedTracks });
+  }, [currentMix, updateMix]);
+
+  const handleRemoveTransition = useCallback((trackId: string, transitionId: string) => {
+    if (!currentMix) return;
+    const updatedTracks = currentMix.tracks.map(track => 
+      track.id === trackId 
+        ? { 
+            ...track, 
+            transitions: track.transitions.filter(t => t.id !== transitionId)
+          }
+        : track
+    );
+    updateMix(currentMix.id, { ...currentMix, tracks: updatedTracks });
+  }, [currentMix, updateMix]);
+
+  const handleAddEffect = useCallback((trackId: string, type: string) => {
+    if (!currentMix) return;
+    const newEffect = {
+      id: Date.now().toString(),
+      type,
+      parameters: {},
+      enabled: true
+    };
+    const updatedTracks = currentMix.tracks.map(track => 
+      track.id === trackId 
+        ? { ...track, effects: [...track.effects, newEffect] }
+        : track
+    );
+    updateMix(currentMix.id, { ...currentMix, tracks: updatedTracks });
+  }, [currentMix, updateMix]);
+
+  const handleRemoveEffect = useCallback((trackId: string, effectId: string) => {
+    if (!currentMix) return;
+    const updatedTracks = currentMix.tracks.map(track => 
+      track.id === trackId 
+        ? { 
+            ...track, 
+            effects: track.effects.filter(e => e.id !== effectId)
+          }
+        : track
+    );
+    updateMix(currentMix.id, { ...currentMix, tracks: updatedTracks });
+  }, [currentMix, updateMix]);
+
+  useEffect(() => {
+    if (onMixUpdate && currentMix) {
+      onMixUpdate(currentMix);
+    }
+  }, [currentMix, onMixUpdate]);
 
   return (
     <div className="flex flex-col h-full">

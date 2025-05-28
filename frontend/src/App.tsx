@@ -1,23 +1,29 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './contexts/ThemeContext';
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
+import { StoreProvider } from './contexts/StoreContext';
+import { SemanticDebuggerPanel } from './components/SemanticDebuggerPanel';
+import { CopilotOverlay } from './components/CopilotOverlay';
+import { GlobalControlPanel } from './components/GlobalControlPanel';
+import { ImageUploadPanel } from './components/ImageUploadPanel';
 
-const App: React.FC = () => {
+function App() {
   return (
-    <Router>
-      <ThemeProvider>
-        <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Dashboard />} />
-          </Routes>
-        </AuthProvider>
-      </ThemeProvider>
-    </Router>
+    <StoreProvider>
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="container mx-auto p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <GlobalControlPanel />
+              <ImageUploadPanel />
+            </div>
+            <div>
+              <SemanticDebuggerPanel />
+            </div>
+          </div>
+        </div>
+        <CopilotOverlay />
+      </div>
+    </StoreProvider>
   );
-};
+}
 
 export default App; 

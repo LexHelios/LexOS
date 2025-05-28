@@ -124,4 +124,79 @@ fi
 print_status "Cleaning up old backups..."
 ssh $DEPLOY_USER@$DEPLOY_HOST "ls -t $BACKUP_PATH | tail -n +6 | xargs -I {} rm -rf $BACKUP_PATH/{}"
 
-print_status "Deployment completed successfully!" 
+print_status "Deployment completed successfully!"
+
+echo -e "${GREEN}🎉 LexOS deployment completed!${NC}"
+echo -e "${BLUE}Frontend: https://lexcommand.ai${NC}"
+echo -e "${BLUE}Backend: https://lexos.runpod.net${NC}"
+echo -e "${BLUE}Database: https://lexos-postgres.onrender.com${NC}"
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+echo -e "${BLUE}🚀 Starting LexOS Deployment...${NC}"
+
+# Check if Vercel CLI is installed
+if ! command -v vercel &> /dev/null; then
+    echo -e "${RED}❌ Vercel CLI not found. Installing...${NC}"
+    npm install -g vercel
+fi
+
+# Deploy Frontend to Vercel
+echo -e "${BLUE}📦 Deploying Frontend to Vercel...${NC}"
+cd frontend
+vercel --prod --yes
+
+# Check if Vercel deployment was successful
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✅ Frontend deployed to Vercel successfully!${NC}"
+else
+    echo -e "${RED}❌ Frontend deployment to Vercel failed!${NC}"
+    exit 1
+fi
+
+# Return to root directory
+cd ..
+
+# Verify RunPod Configuration
+echo -e "${BLUE}🔍 Verifying RunPod Configuration...${NC}"
+if [ ! -f ".runpod.env" ]; then
+    echo -e "${RED}❌ RunPod environment file not found!${NC}"
+    echo -e "${YELLOW}Please create .runpod.env with your RunPod configuration${NC}"
+    exit 1
+fi
+
+# Check RunPod API Key
+if [ -z "$RUNPOD_API_KEY" ]; then
+    echo -e "${RED}❌ RunPod API Key not found!${NC}"
+    echo -e "${YELLOW}Please set RUNPOD_API_KEY environment variable${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ RunPod configuration verified!${NC}"
+
+# Verify Supabase Configuration
+echo -e "${BLUE}🔍 Verifying Supabase Configuration...${NC}"
+if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ] || [ -z "$SUPABASE_SERVICE_KEY" ]; then
+    echo -e "${RED}❌ Supabase configuration incomplete!${NC}"
+    echo -e "${YELLOW}Please set SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_KEY${NC}"
+    exit 1
+fi
+
+# Test Supabase Connection
+echo -e "${BLUE}🔍 Testing Supabase Connection...${NC}"
+if curl -s "$SUPABASE_URL/rest/v1/" -H "apikey: $SUPABASE_ANON_KEY" > /dev/null; then
+    echo -e "${GREEN}✅ Supabase connection successful!${NC}"
+else
+    echo -e "${RED}❌ Supabase connection failed!${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}🎉 LexOS deployment completed!${NC}"
+echo -e "${BLUE}Frontend: https://lexcommand.ai${NC}"
+echo -e "${BLUE}Backend: https://lexos.runpod.net${NC}"
+echo -e "${BLUE}Memory: https://lexos.supabase.co${NC}"
+echo -e "${BLUE}Database: https://lexos-postgres.onrender.com${NC}" 

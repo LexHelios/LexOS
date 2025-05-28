@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: lexos-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        value: 8000
+      - key: ENVIRONMENT
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: https://lexcommand.ai,http://localhost:3000
+      - key: REDIS_URL
+        fromDatabase:
+          name: lexos-redis
+          property: connectionString
+    healthCheckPath: /health
+    autoDeploy: true
+
+  - type: redis
+    name: lexos-redis
+    plan: free
+    ipAllowList: []
+
+  - type: web
+    name: lexos-llm
+    env: docker
+    dockerfilePath: ./llm-service/Dockerfile
+    envVars:
+      - key: MODEL_PATH
+        value: /app/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf
+      - key: GPU_ENABLED
+        value: "true"
+    healthCheckPath: /health
+    autoDeploy: true
+
+  - type: web
+    name: lexos-analytics
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        value: 8002
+    healthCheckPath: /health
+    autoDeploy: true
+
+databases:
+  - name: lexos-postgres
+    databaseName: lexos
+    user: lexos
+    plan: free 

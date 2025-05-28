@@ -1,297 +1,214 @@
-# Deployment Guide
+# LexOS Deployment Guide
 
-This guide provides detailed instructions for deploying the LexCommand Shadow Autonomy system.
+This guide explains how to deploy LexOS using a split architecture between Vercel (frontend), RunPod (backend), and Supabase (memory).
+
+## Architecture Overview
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│    Vercel      │     │     RunPod      │     │    Supabase     │
+│   (Frontend)   │◄────┤    (Backend)    │◄────┤    (Memory)     │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+        ▲                      ▲                        ▲
+        │                      │                        │
+        │                      │                        │
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│    Vercel      │     │     Render      │     │    Supabase     │
+│     CDN        │     │  (Database)     │     │    Storage      │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
 
 ## Prerequisites
 
-- Kubernetes cluster (v1.21+)
-- Helm (v3.7+)
-- Docker
-- kubectl configured
-- Cloudflare account (for frontend)
-- Redis instance
-- Monitoring stack (Prometheus, Grafana)
-
-## Architecture
-
-The system consists of the following components:
-
-1. Frontend (React SPA)
-2. Backend API (FastAPI)
-3. Redis (Session store)
-4. Monitoring stack
-5. Database (PostgreSQL)
+1. Vercel Account
+2. RunPod Account
+3. Render Account (for database)
+4. Supabase Account
+5. Node.js and npm installed
+6. Git repository with LexOS code
 
 ## Deployment Steps
 
-### 1. Frontend Deployment
-
-#### Using Cloudflare Pages
-
-1. Connect your GitHub repository to Cloudflare Pages
-2. Configure build settings:
-   - Build command: `npm run build`
-   - Build output directory: `build`
-   - Node version: 18
-3. Set environment variables:
-   ```
-   REACT_APP_API_URL=https://api.lexcommand.example.com
-   REACT_APP_SENTRY_DSN=your-sentry-dsn
-   REACT_APP_ALLOWED_ORIGINS=https://lexcommand.example.com
-   ```
-
-#### Using Docker
+### 1. Initial Setup
 
 ```bash
-# Build the image
-docker build -t lexcommand-frontend:latest -f frontend/Dockerfile .
+# Install deployment tools
+npm install -g vercel
 
-# Push to registry
-docker push your-registry/lexcommand-frontend:latest
+# Login to Vercel
+vercel login
 ```
 
-### 2. Backend Deployment
+### 2. Environment Variables
 
-#### Using Helm
-
-1. Add the Helm repository:
-```bash
-helm repo add lexcommand https://charts.lexcommand.ai
-helm repo update
+#### Frontend (.env)
+```env
+VITE_WS_URL=wss://lexos.runpod.net/socket.io
+VITE_API_URL=https://lexos.runpod.net
+VITE_APP_NAME=LexOS
+VITE_APP_VERSION=1.0.0
+VITE_SUPABASE_URL=https://lexos.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_SUPABASE_SERVICE_KEY=your-service-key
 ```
 
-2. Create a values file (`values.yaml`):
-```yaml
-replicaCount: 3
-image:
-  repository: your-registry/lexcommand-backend
-  tag: latest
-  pullPolicy: Always
-
-env:
-  REDIS_HOST: redis-master
-  REDIS_PORT: 6379
-  JWT_SECRET: your-secret
-  ALLOWED_ORIGINS: https://lexcommand.example.com
-
-resources:
-  requests:
-    cpu: 100m
-    memory: 256Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
-
-autoscaling:
-  enabled: true
-  minReplicas: 3
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
+#### Backend (RunPod)
+```env
+ENVIRONMENT=production
+ALLOWED_ORIGINS=https://lexcommand.ai,http://localhost:3000
+REDIS_URL=redis://lexos-redis.onrender.com:6379
+POSTGRES_URL=postgresql://lexos:${DB_PASSWORD}@lexos-postgres.onrender.com:5432/lexos
+SUPABASE_URL=https://lexos.supabase.co
+SUPABASE_SERVICE_KEY=your-service-key
 ```
 
-3. Install the chart:
-```bash
-helm install lexcommand-backend lexcommand/lexcommand-backend -f values.yaml
-```
-
-### 3. Redis Deployment
+### 3. Deploy
 
 ```bash
-helm install redis bitnami/redis \
-  --set auth.password=your-password \
-  --set master.persistence.size=10Gi \
-  --set replica.persistence.size=10Gi
+# Make the deployment script executable
+chmod +x deploy.sh
+
+# Run the deployment
+./deploy.sh
 ```
 
-### 4. Monitoring Stack
+## Services Deployed
 
-1. Install Prometheus:
-```bash
-helm install prometheus prometheus-community/kube-prometheus-stack \
-  --set grafana.enabled=true \
-  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
-```
+### Vercel (Frontend)
+- React application
+- Static assets
+- Global CDN
+- Automatic SSL
 
-2. Configure Grafana dashboards:
-   - Import dashboard JSON files from `monitoring/grafana/`
-   - Configure data sources
-   - Set up alerts
+### RunPod (Backend)
+- Main API Service
+- LLM Service
+- WebSocket Server
+- GPU Acceleration
 
-### 5. Database Setup
+### Supabase (Memory)
+- Short-term Memory (Redis)
+- Long-term Memory (PostgreSQL)
+- Vector Storage
+- File Storage
+- Real-time Subscriptions
 
-1. Install PostgreSQL:
-```bash
-helm install postgres bitnami/postgresql \
-  --set auth.postgresPassword=your-password \
-  --set primary.persistence.size=20Gi
-```
+### Render (Database)
+- PostgreSQL Database (Backup)
+- Redis Instance (Cache)
 
-2. Run migrations:
-```bash
-kubectl exec -it deploy/lexcommand-backend -- alembic upgrade head
-```
+## Memory Management
 
-## Security Configuration
+### Short-term Memory (Supabase Redis)
+- Session data
+- Active conversations
+- Temporary state
+- Real-time updates
 
-1. Configure TLS:
-```bash
-kubectl create secret tls lexcommand-tls \
-  --cert=path/to/cert.pem \
-  --key=path/to/key.pem
-```
+### Long-term Memory (Supabase PostgreSQL)
+- User profiles
+- Conversation history
+- Knowledge base
+- Vector embeddings
 
-2. Set up network policies:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: lexcommand-backend
-spec:
-  podSelector:
-    matchLabels:
-      app: lexcommand-backend
-  policyTypes:
-  - Ingress
-  - Egress
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: ingress-nginx
-    ports:
-    - protocol: TCP
-      port: 8000
-```
+### Vector Storage (Supabase pgvector)
+- Semantic search
+- Similarity matching
+- Context retrieval
+- Knowledge graphs
 
-## Monitoring and Alerts
+## Monitoring
 
-1. Configure Prometheus alerts:
-```yaml
-groups:
-- name: lexcommand
-  rules:
-  - alert: HighErrorRate
-    expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
-    for: 5m
-    labels:
-      severity: critical
-    annotations:
-      summary: High error rate detected
-```
+### Vercel
+- Visit https://vercel.com/dashboard
+- Check deployment status
+- View analytics
+- Monitor performance
 
-2. Set up Slack notifications:
-```yaml
-receivers:
-- name: slack
-  slack_configs:
-  - channel: '#alerts'
-    send_resolved: true
-```
+### RunPod
+- Visit https://www.runpod.io/console
+- Monitor GPU usage
+- View logs
+- Check pod status
 
-## Backup and Recovery
+### Supabase
+- Visit https://app.supabase.com
+- Monitor database performance
+- View real-time logs
+- Check storage usage
 
-1. Configure database backups:
-```bash
-kubectl create cronjob postgres-backup \
-  --image=postgres:13 \
-  --schedule="0 0 * * *" \
-  -- pg_dump -h postgres -U postgres lexcommand > /backup/lexcommand-$(date +%Y%m%d).sql
-```
-
-2. Set up Redis persistence:
-```yaml
-redis:
-  master:
-    persistence:
-      enabled: true
-      snapshot: true
-```
-
-## Scaling
-
-1. Horizontal Pod Autoscaling:
-```yaml
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: lexcommand-backend
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: lexcommand-backend
-  minReplicas: 3
-  maxReplicas: 10
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 80
-```
+### Render
+- Visit https://dashboard.render.com
+- Monitor database health
+- View logs
+- Check resource usage
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. Database connection issues:
-```bash
-kubectl logs -l app=lexcommand-backend
-kubectl exec -it deploy/postgres -- psql -U postgres
-```
+1. **CORS Errors**
+   - Check ALLOWED_ORIGINS in RunPod environment
+   - Verify frontend URL is included
 
-2. Redis connection issues:
-```bash
-kubectl logs -l app=lexcommand-backend
-kubectl exec -it deploy/redis-master -- redis-cli
-```
+2. **WebSocket Connection Issues**
+   - Verify VITE_WS_URL in frontend .env
+   - Check RunPod pod status
 
-3. Frontend issues:
-```bash
-# Check Cloudflare Pages deployment logs
-# Check browser console for errors
-```
+3. **Memory Issues**
+   - Check Supabase connection
+   - Verify vector storage configuration
+   - Monitor memory usage
 
-### Health Checks
+### Support
 
-```bash
-# API health
-curl https://api.lexcommand.example.com/health
+- Vercel Support: https://vercel.com/support
+- RunPod Support: https://www.runpod.io/support
+- Supabase Support: https://supabase.com/support
+- Render Support: https://render.com/docs/support
 
-# Frontend health
-curl https://lexcommand.example.com/health
+## Security Notes
 
-# Database health
-kubectl exec -it deploy/postgres -- pg_isready
-```
+1. Never commit .env files
+2. Use strong passwords for databases
+3. Enable 2FA on all platforms
+4. Regularly rotate API keys
+5. Monitor access logs
+6. Encrypt sensitive data in Supabase
 
-## Maintenance
+## Backup and Recovery
 
-1. Upgrading:
-```bash
-# Update Helm charts
-helm repo update
+### Database Backups
+- Supabase handles automatic backups
+- Backup frequency: Daily
+- Retention: 7 days
+- Point-in-time recovery available
 
-# Upgrade backend
-helm upgrade lexcommand-backend lexcommand/lexcommand-backend -f values.yaml
+### Application State
+- Redis data is persisted
+- Static assets are versioned
+- Environment variables are stored securely
+- Vector embeddings are backed up
 
-# Upgrade frontend
-# Update Docker image tag in Cloudflare Pages
-```
+## Scaling
 
-2. Backup verification:
-```bash
-# Verify database backups
-kubectl exec -it deploy/postgres -- pg_restore -l /backup/lexcommand-latest.sql
+### Vercel
+- Automatic scaling
+- Edge network optimization
+- Zero-config CDN
 
-# Verify Redis persistence
-kubectl exec -it deploy/redis-master -- redis-cli save
-```
+### RunPod
+- GPU scaling based on demand
+- Automatic pod management
+- Pay-per-use pricing
 
-## Support
+### Supabase
+- Automatic database scaling
+- Vector search optimization
+- Real-time subscription scaling
+- Storage scaling
 
-For deployment support:
-- Email: deploy@lexcommand.ai
-- Slack: #deployment-support
-- Documentation: https://docs.lexcommand.ai/deployment 
+### Render
+- Database scaling options available
+- Redis cluster support
+- Automatic failover 

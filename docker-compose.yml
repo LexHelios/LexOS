@@ -1,4 +1,4 @@
-version: '3.9'
+version: '3.8'
 
 services:
   # Agent Team Service (Orchestrator/Brain)
@@ -241,6 +241,35 @@ services:
     restart: unless-stopped
     networks:
       - lexos-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - lexos-network
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=http://localhost/api
+      - VITE_WS_URL=ws://localhost/ws
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - lexos-network
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - CORS_ORIGIN=http://localhost
+      - WS_ORIGIN=http://localhost
 
 networks:
   lexos-network:
