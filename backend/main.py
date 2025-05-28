@@ -180,7 +180,7 @@ async def create_token(user_id: str, role: str, redis_client: redis.Redis) -> To
         }
         
         try:
-            with open("/etc/lexcommand/keys/jwt-private.pem", "rb") as f:
+            with open("keys/jwt-private.pem", "rb") as f:
                 private_key = f.read()
             token = jwt.encode(payload, private_key, algorithm="RS256")
             await redis_client.setex(f"token:{jti}", lifetime, user_id)
@@ -194,7 +194,7 @@ async def create_token(user_id: str, role: str, redis_client: redis.Redis) -> To
 async def validate_token(credentials: HTTPAuthorizationCredentials = Depends(security), redis_client: redis.Redis = Depends(get_redis)):
     with tracer.start_as_current_span("validate_token") as span:
         try:
-            with open("/etc/lexcommand/keys/jwt-public.pem", "rb") as f:
+            with open("keys/jwt-public.pem", "rb") as f:
                 public_key = f.read()
             payload = jwt.decode(credentials.credentials, public_key, algorithms=["RS256"])
             
@@ -402,7 +402,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            await websocket.send_text(f"Echo: {data}")
+            await manager.broadcast(f"Echo: {data}")
     except WebSocketDisconnect:
         manager.disconnect(websocket)
     except Exception as e:
