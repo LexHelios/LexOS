@@ -585,41 +585,6 @@ services:
       - no-new-privileges:true
     runtime: nvidia
 
-  # Vision Service
-  vision:
-    build:
-      context: ./vision-service
-      dockerfile: Dockerfile
-      args:
-        - BUILD_ENV=production
-        - VISION_VERSION=${VISION_VERSION}
-    container_name: lexos-vision
-    restart: unless-stopped
-    volumes:
-      - ${LEXOS_DATA_DIR}/vision:/data
-      - ${LEXOS_CONFIG_DIR}/vision:/config
-      - ${LEXOS_DATA_DIR}/models:/models
-    environment:
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
-      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}
-      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES}
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
-    networks:
-      - lexos-network
-    healthcheck: *default-healthcheck
-    logging: *default-logging
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 8G
-        reservations:
-          cpus: '2'
-          memory: 4G
-    security_opt:
-      - no-new-privileges:true
-    runtime: nvidia
-
   # Voice Orchestrator Service
   voice-orchestrator:
     build:
