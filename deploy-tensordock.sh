@@ -22,9 +22,9 @@ docker push tensordock.com/$TENSORDOCK_USERNAME/lexos:latest
 echo "Deploying to TensorDock..."
 tensordock deploy \
     --image tensordock.com/$TENSORDOCK_USERNAME/lexos:latest \
-    --gpu-type "RTX 3090" \
+    --gpu-type "RTX A6000" \
     --gpu-count 1 \
-    --memory 32 \
+    --memory 16 \
     --disk 100 \
     --ports 8000-8009 \
     --name "lexos-deployment"

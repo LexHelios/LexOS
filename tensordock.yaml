@@ -8,6 +8,9 @@ services:
     image: lexhelios/lexos:latest
     deploy:
       resources:
+        limits:
+          cpus: '4'
+          memory: 16G
         reservations:
           devices:
             - driver: nvidia
