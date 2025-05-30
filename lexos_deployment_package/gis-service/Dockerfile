@@ -10,9 +10,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gdal-bin \
-    libgdal-dev \
-    gdal-data \
-    python3-gdal \
+    libgdal-dev=3.6.2* \
+    gdal-data=3.6.2* \
+    python3-gdal=3.6.2* \
     libgeos-dev \
     libproj-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -20,18 +20,19 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy requirements file
+# Copy requirements first to leverage Docker cache
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Copy application code
+COPY . .
 
-# Copy source code
-COPY src/ /app/src/
-COPY config/ /app/config/
+# Set environment variables
+ENV PYTHONPATH=/app \
+    PORT=8003
 
-# Set Python path
-ENV PYTHONPATH=/app
+# Expose port
+EXPOSE 8003
 
-# Run the service
-CMD ["python3", "src/main.py"] 
+# Run the application
+CMD ["gunicorn", "src.main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8003"] 

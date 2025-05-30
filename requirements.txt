@@ -1,5 +1,5 @@
 # Core Dependencies
-anthropic>=0.8.0
+anthropic>=0.5.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 click>=8.1.7
@@ -35,19 +35,19 @@ types-setuptools>=69.0.0.0
 types-PyYAML>=6.0.12.12
 
 # API and Web
-fastapi==0.104.1
-uvicorn==0.24.0
+fastapi>=0.100.0
+uvicorn>=0.22.0
 websockets>=9.0,<11.0
 aiohttp>=3.9.1
-gunicorn==21.2.0
+gunicorn>=21.2.0
 starlette>=0.27.0
-pydantic==2.4.2
+pydantic>=2.0.0
 pydantic-settings==2.0.3
 email-validator>=2.1.0.post1
 
 # Data Processing
-pandas>=2.1.3
-numpy>=1.26.2
+pandas>=2.0.0
+numpy>=1.24.0
 python-dateutil>=2.8.2
 openpyxl>=3.1.2
 xlrd>=2.0.1
@@ -64,18 +64,18 @@ oauthlib>=3.2.2
 requests-oauthlib>=1.3.1
 
 # Database
-sqlalchemy==2.0.23
-alembic==1.12.1
-psycopg2-binary==2.9.9
+sqlalchemy>=2.0.0
+alembic>=1.11.0
+psycopg2-binary>=2.9.0
 asyncpg>=0.29.0
-redis==5.0.1
+redis>=4.5.0
 aioredis>=2.0.1
 motor>=3.3.2
 pymongo>=4.6.1
 
 # Monitoring and Logging
 prometheus-client>=0.19.0
-structlog>=23.2.0
+structlog>=23.1.0
 sentry-sdk>=1.39.1
 opentelemetry-api>=1.22.0
 opentelemetry-sdk>=1.22.0
@@ -109,12 +109,12 @@ alpaca-trade-api>=3.0.2
 
 # Social Network Dependencies
 networkx>=3.2.1
-scipy>=1.11.4
-scikit-learn>=1.3.2
+scipy>=1.12.0
+scikit-learn>=1.2.0
 nltk>=3.8.1
 spacy>=3.7.2
-transformers>=4.36.2
-torch>=2.1.2
+transformers>=4.30.0
+torch>=2.0.0
 
 # Documentation
 sphinx>=7.2.6
@@ -124,3 +124,14 @@ mkdocs-material>=9.4.14
 
 # HTTP Client
 httpx==0.25.1
+
+# Added from the code block
+GDAL==3.6.2
+statsmodels>=0.14.0
+prophet>=1.1.4
+pmdarima>=2.0.3
+openai>=1.3.0
+cohere>=4.37
+google-generativeai>=0.3.0
+replicate>=0.22.0
+huggingface-hub>=0.19.0
