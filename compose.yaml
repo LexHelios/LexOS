@@ -1,121 +1,150 @@
 services:
+  python-backend:
+    build:
+      context: ./backend
+    container_name: python-backend
+    restart: unless-stopped
+    init: true
+    # env_file: ./backend/.env  # Uncomment if .env file exists
+    ports:
+      - "3000:3000"  # Exposed by backend Dockerfile
+    networks:
+      - lexos-net
+    depends_on:
+      - redis
+      - postgres
+
+  typescript-frontend:
+    build:
+      context: ./frontend
+    container_name: typescript-frontend
+    restart: unless-stopped
+    init: true
+    # env_file: ./frontend/.env  # Uncomment if .env file exists
+    ports:
+      - "8080:80"  # Nginx serves on 80, mapped to 8080 for host
+    networks:
+      - lexos-net
+    depends_on:
+      - python-backend
+
   python-agent-team-service:
     build:
       context: ./lexos_deployment_package/agent-team-service
     container_name: python-agent-team-service
     restart: unless-stopped
+    # env_file: ./lexos_deployment_package/agent-team-service/.env  # Uncomment if .env file exists
+    ports:
+      - "8000:8000"  # Exposed by Dockerfile
+    networks:
+      - lexos-net
     depends_on:
-      - postgres
       - redis
-    networks:
-      - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in agent-team-service
-    # Exposes FastAPI default port
-    ports:
-      - "8000:8000"
-
-  python-agent-scripts:
-    build:
-      context: ./lexos_deployment_package/agent-scripts
-    container_name: python-agent-scripts
-    restart: unless-stopped
-    networks:
-      - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in agent-scripts
-    # Exposes Uvicorn/Gunicorn port
-    ports:
-      - "8009:8009"
+      - postgres
+      # GPU support required; run with `--gpus` if needed
+    # If using NVIDIA GPU, add the following to docker-compose command:
+    #   docker compose --gpus all up
 
   python-ai-orchestrator:
     build:
       context: ./ai-orchestrator
     container_name: python-ai-orchestrator
     restart: unless-stopped
+    # env_file: ./ai-orchestrator/.env  # Uncomment if .env file exists
     networks:
       - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in ai-orchestrator
+    depends_on:
+      - python-backend
 
   python-analytics-service:
     build:
       context: ./analytics-service
     container_name: python-analytics-service
     restart: unless-stopped
+    # env_file: ./analytics-service/.env  # Uncomment if .env file exists
     networks:
       - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in analytics-service
+    depends_on:
+      - postgres
 
   python-digital-twin-service:
     build:
       context: ./digital-twin-service
     container_name: python-digital-twin-service
     restart: unless-stopped
+    # env_file: ./digital-twin-service/.env  # Uncomment if .env file exists
     networks:
       - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in digital-twin-service
+    depends_on:
+      - postgres
 
   python-gis-service:
     build:
       context: ./gis-service
     container_name: python-gis-service
     restart: unless-stopped
+    # env_file: ./gis-service/.env  # Uncomment if .env file exists
     networks:
       - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in gis-service
+    depends_on:
+      - postgres
 
   python-llm-service:
     build:
       context: ./llm-service
     container_name: python-llm-service
     restart: unless-stopped
+    # env_file: ./llm-service/.env  # Uncomment if .env file exists
     networks:
       - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in llm-service
+    depends_on:
+      - python-backend
 
   python-oracle-service:
     build:
       context: ./oracle-service
     container_name: python-oracle-service
     restart: unless-stopped
+    # env_file: ./oracle-service/.env  # Uncomment if .env file exists
     networks:
       - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in oracle-service
+    depends_on:
+      - postgres
+
+  python-vision-service:
+    build:
+      context: ./vision-service
+    container_name: python-vision-service
+    restart: unless-stopped
+    # env_file: ./vision-service/.env  # Uncomment if .env file exists
+    networks:
+      - lexos-net
 
   python-voice-orchestrator:
     build:
       context: ./voice-orchestrator
     container_name: python-voice-orchestrator
     restart: unless-stopped
+    # env_file: ./voice-orchestrator/.env  # Uncomment if .env file exists
     networks:
       - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in voice-orchestrator
 
-  typescript-src:
-    build:
-      context: ./src
-    container_name: typescript-src
-    restart: unless-stopped
-    init: true
-    networks:
-      - lexos-net
-    # env_file: ./.env  # Uncomment if .env file exists in src
-    # Exposes default Node.js port
-    ports:
-      - "3000:3000"
-
-  # External services required by the stack
+  # External dependencies
   postgres:
     image: postgres:latest
     container_name: postgres
     restart: unless-stopped
-    networks:
-      - lexos-net
     environment:
       POSTGRES_USER: lexos_user
       POSTGRES_PASSWORD: your_secure_password_here  # Set in .env or override
       POSTGRES_DB: lexos_db
+    ports:
+      - "5432:5432"
+    networks:
+      - lexos-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U lexos_user"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
     volumes:
@@ -125,12 +154,14 @@ services:
     image: redis:latest
     container_name: redis
     restart: unless-stopped
+    command: ["redis-server", "--requirepass", "your_redis_password_here"]  # Set in .env or override
+    ports:
+      - "6379:6379"
     networks:
       - lexos-net
-    command: ["redis-server", "--requirepass", "your_redis_password_here"]  # Set in .env or override
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
     volumes:
