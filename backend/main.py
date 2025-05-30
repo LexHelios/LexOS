@@ -27,6 +27,7 @@ import asyncio
 import numpy as np
 from scipy import signal
 import psutil
+from app.routers import comms_sms, comms_email, comms_whatsapp, comms_calendar, comms_social
 
 # Connection Manager class - moved directly into main.py to avoid import issues
 class ConnectionManager:
@@ -408,6 +409,13 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         logger.error(f"WebSocket error: {str(e)}")
         manager.disconnect(websocket)
+
+# Register new communication routers
+app.include_router(comms_sms.router)
+app.include_router(comms_email.router)
+app.include_router(comms_whatsapp.router)
+app.include_router(comms_calendar.router)
+app.include_router(comms_social.router)
 
 if __name__ == "__main__":
     import uvicorn
