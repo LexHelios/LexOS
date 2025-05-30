@@ -1,0 +1,23 @@
+{
+    "name": "LexOS",
+    "description": "LexOS AI Platform with GPU support",
+    "dockerImageName": "lexhelios/lexos:latest",
+    "containerPort": 8000,
+    "dockerArgs": "",
+    "containerArgs": "",
+    "containerUser": "root",
+    "startJupyter": false,
+    "startSsh": true,
+    "isPublic": false,
+    "isNvidia": true,
+    "ports": "8000/http,8001/http,8002/http,8003/http,8004/http,8005/http,8006/http,8007/http,8008/http,8009/http",
+    "volumeMounts": {
+        "/workspace": "workspace"
+    },
+    "environmentVariables": {
+        "PYTHONUNBUFFERED": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPATH": "/app",
+        "PORT": "8000"
+    }
+} 
