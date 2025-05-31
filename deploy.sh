@@ -199,4 +199,69 @@ echo -e "${GREEN}🎉 LexOS deployment completed!${NC}"
 echo -e "${BLUE}Frontend: https://lexcommand.ai${NC}"
 echo -e "${BLUE}Backend: https://lexos.runpod.net${NC}"
 echo -e "${BLUE}Memory: https://lexos.supabase.co${NC}"
-echo -e "${BLUE}Database: https://lexos-postgres.onrender.com${NC}" 
+echo -e "${BLUE}Database: https://lexos-postgres.onrender.com${NC}"
+
+# Create necessary directories
+mkdir -p backend/logs backend/data creative-assets
+
+# Create .env file if it doesn't exist
+if [ ! -f .env ]; then
+    echo "Creating .env file..."
+    cat > .env << EOL
+# Database Configuration
+POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+DATABASE_URL=postgresql://lexos_admin:$POSTGRES_PASSWORD@postgres:5432/lexos_consciousness
+
+# Security
+JWT_SECRET=$JWT_SECRET
+ENCRYPTION_KEY=$ENCRYPTION_KEY
+
+# AI Provider Keys
+OPENAI_API_KEY=$OPENAI_API_KEY
+ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY
+COHERE_API_KEY=$COHERE_API_KEY
+PERPLEXITY_API_KEY=$PERPLEXITY_API_KEY
+REPLICATE_API_KEY=$REPLICATE_API_KEY
+HUGGINGFACE_API_KEY=$HUGGINGFACE_API_KEY
+GEMINI_API_KEY=$GEMINI_API_KEY
+
+# Design and UI
+FIGMA_API_KEY=$FIGMA_API_KEY
+
+# Application URLs
+API_URL=http://localhost:8000
+WS_URL=ws://localhost:8080
+FRONTEND_URL=http://localhost:3000
+
+# Environment
+ENVIRONMENT=production
+DEBUG=false
+LOG_LEVEL=INFO
+
+# Redis Configuration
+REDIS_URL=redis://redis:6379
+
+# Service URLs
+QDRANT_URL=http://qdrant:6333
+CLICKHOUSE_URL=http://clickhouse:8123
+
+# Monitoring
+PROMETHEUS_MULTIPROC_DIR=/tmp
+EOL
+fi
+
+# Build and start services
+echo "Building and starting services..."
+docker-compose build
+docker-compose up -d
+
+# Wait for services to be ready
+echo "Waiting for services to be ready..."
+sleep 10
+
+# Check service health
+echo "Checking service health..."
+curl -f http://localhost:8000/health || echo "API Gateway not ready"
+curl -f http://localhost:8080/health || echo "WebSocket server not ready"
+
+echo "Deployment complete!" 
