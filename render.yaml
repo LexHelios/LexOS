@@ -53,9 +53,9 @@ services:
       - key: NODE_VERSION
         value: 18.0.0
       - key: REACT_APP_API_URL
-        value: https://lexos-backend.onrender.com
+        value: https://lexos-2.onrender.com
       - key: REACT_APP_WS_URL
-        value: wss://lexos-backend.onrender.com
+        value: wss://lexos-2.onrender.com
     healthCheckPath: /
     autoDeploy: true
 
