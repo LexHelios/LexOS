@@ -12,7 +12,7 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: ALLOWED_ORIGINS
-        value: https://lexcommand.vercel.app,https://lexcommand.ai,http://localhost:3000
+        value: https://lexcommand.ai,https://www.lexcommand.ai,https://lexcommand.vercel.app,http://localhost:3000
       - key: OPENAI_API_KEY
         sync: false
       - key: ANTHROPIC_API_KEY
