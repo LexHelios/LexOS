@@ -24,8 +24,8 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://api.lexos.ai",
-    "VITE_WS_URL": "wss://api.lexos.ai",
+    "VITE_API_URL": "https://api.lexcommand.ai",
+    "VITE_WS_URL": "wss://api.lexcommand.ai",
     "VITE_SENTRY_DSN": "@sentry-dsn",
     "VITE_APP_ENV": "production"
   }
