@@ -1,74 +1,23 @@
 {
   "name": "lexos-frontend",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@radix-ui/react-scroll-area": "^1.0.5",
-    "@radix-ui/react-slot": "^1.0.2",
-    "@react-three/drei": "^9.102.6",
-    "@react-three/fiber": "^8.15.19",
-    "@sentry/react": "^7.120.3",
-    "@sentry/tracing": "^7.120.3",
-    "@tremor/react": "^3.12.1",
-    "axios": "^1.9.0",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.1.0",
-    "date-fns": "^3.3.1",
-    "fuse.js": "^7.0.0",
-    "idb": "^8.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-hotkeys-hook": "^4.4.1",
-    "react-router-dom": "^6.22.3",
-    "tailwind-merge": "^2.2.1",
-    "three": "^0.162.0",
-    "tone": "^14.7.77",
-    "zustand": "^4.5.1"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/node": "^20.17.51",
-    "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
-    "@types/react-router-dom": "^5.3.3",
-    "@types/socket.io-client": "^3.0.0",
-    "@types/three": "^0.162.0",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.3",
     "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "^10.4.17",
-    "eslint": "^8.56.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.5",
-    "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1",
-    "terser": "^5.40.0",
     "typescript": "^5.2.2",
-    "vite": "^5.1.0"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "vite": "^5.1.0",
+    "terser": "^5.30.3"
   }
 }
