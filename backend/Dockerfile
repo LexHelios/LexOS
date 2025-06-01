@@ -22,8 +22,7 @@ COPY --link requirements.txt ./
 # Create venv and install dependencies using pip cache
 RUN python -m venv .venv \
     && .venv/bin/pip install --upgrade pip \
-    && --mount=type=cache,target=/root/.cache/pip \
-       .venv/bin/pip install -r requirements.txt
+    && .venv/bin/pip install -r requirements.txt
 
 # Copy the rest of the application code (excluding .env, .git, etc. via .dockerignore)
 COPY --link . .
