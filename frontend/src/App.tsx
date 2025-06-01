@@ -1,21 +1,28 @@
-/// <reference types="vite/client" />
-import { useEffect, useState } from 'react';
+import React from 'react';
+import { StoreProvider } from './contexts/StoreContext';
+import { SemanticDebuggerPanel } from './components/SemanticDebuggerPanel';
+import { CopilotOverlay } from './components/CopilotOverlay';
+import { GlobalControlPanel } from './components/GlobalControlPanel';
+import { ImageUploadPanel } from './components/ImageUploadPanel';
 
 function App() {
-  const [health, setHealth] = useState('');
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/health`)
-      .then(res => res.json())
-      .then(data => setHealth(JSON.stringify(data)))
-      .catch(err => setHealth('Error: ' + err));
-  }, []);
-
   return (
-    <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-      <h1>Vite + React</h1>
-      <p>Backend health: {health}</p>
-    </div>
+    <StoreProvider>
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="container mx-auto p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <GlobalControlPanel />
+              <ImageUploadPanel />
+            </div>
+            <div>
+              <SemanticDebuggerPanel />
+            </div>
+          </div>
+        </div>
+        <CopilotOverlay />
+      </div>
+    </StoreProvider>
   );
 }
 

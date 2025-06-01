@@ -13,6 +13,8 @@
   "dependencies": {
     "@radix-ui/react-scroll-area": "^1.0.5",
     "@radix-ui/react-slot": "^1.0.2",
+    "@react-three/drei": "^9.102.6",
+    "@react-three/fiber": "^8.15.19",
     "@sentry/react": "^7.120.3",
     "@sentry/tracing": "^7.120.3",
     "@tremor/react": "^3.12.1",
@@ -28,8 +30,6 @@
     "react-router-dom": "^6.22.3",
     "tailwind-merge": "^2.2.1",
     "three": "^0.162.0",
-    "@react-three/fiber": "^8.15.19",
-    "@react-three/drei": "^9.102.6",
     "tone": "^14.7.77",
     "zustand": "^4.5.1"
   },
@@ -38,6 +38,7 @@
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@types/react-router-dom": "^5.3.3",
+    "@types/socket.io-client": "^3.0.0",
     "@types/three": "^0.162.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
