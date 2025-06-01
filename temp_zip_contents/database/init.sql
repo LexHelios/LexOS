@@ -1,0 +1,1 @@
+-- SQL schema placeholder for consciousness memory and learning

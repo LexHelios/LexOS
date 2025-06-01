@@ -8,12 +8,13 @@ ARG NODE_VERSION=22.13.1
 FROM node:${NODE_VERSION}-slim AS builder
 WORKDIR /app
 
-# Install dependencies (npm ci for deterministic builds)
+# Install build dependencies only
 COPY --link package.json package-lock.json ./
+
 RUN --mount=type=cache,target=/root/.npm \
     npm ci
 
-# Copy the rest of the application source
+# Copy the rest of the app source
 COPY --link . .
 
 # Build the app (Vite + TypeScript)

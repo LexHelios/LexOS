@@ -1,27 +1,119 @@
-# Dependencies
-node_modules
-npm-debug.log
-
-# Build output
-dist
-build
-coverage
-
-# Environment files
-.env
-.env.*
-!.env.example
-
-# Version control
-.git
+# 1. Version control
+.git/
 .gitignore
+.svn/
+.hg/
 
-# IDE files
-.idea
-.vscode
+# 2. Node.js / TypeScript
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# 3. Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+*.pyd
+*.pdb
+*.egg-info/
+.eggs/
+
+# 4. Go (if any)
+/vendor/
+*.test
+.go-cache/
+
+# 5. Java (if any)
+target/
+*.class
+.gradle/
+
+# 6. IDE/editor files
+.idea/
+.vscode/
 *.swp
 *.swo
+*.sublime*
+*.DS_Store
 
-# OS files
-.DS_Store
-Thumbs.db 
+# 7. Build outputs
+build/
+dist/
+out/
+
+# 8. Test files and folders
+test/
+tests/
+__tests__/
+*_test.go
+coverage/
+
+# 9. Debug and log files
+debug/
+*.log
+
+# 10. Environment and secrets
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.crt
+
+# 11. Local and temp files
+.local/
+local/
+tmp/
+temp/
+*.tmp
+
+# 12. Project-specific patterns
+Dockerfile*
+docker-compose*
+
+# 13. Documentation and markdown
+docs/
+*.md
+README*
+
+# 14. Backup and old files
+*.bak
+*.old
+*.orig
+
+# 15. Miscellaneous
+*.docx
+*.pdf
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+
+# 16. Configuration overrides
+config.local.*
+*.local.yml
+
+# 17. Exclude lock files from ignore (as per instructions)
+# (Do NOT ignore *.lock files)
+
+# 18. Exclude build scripts and necessary config
+!requirements.txt
+!package.json
+!package-lock.json
+!yarn.lock
+!Pipfile
+!Pipfile.lock
+
+# 19. Exclude Dockerfiles for build context
+!Dockerfile
+!Dockerfile.*
+
+# 20. Exclude public assets if needed
+# (Uncomment if public/ should be included)
+#!public/
+
+# End of .dockerignore

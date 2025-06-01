@@ -1,0 +1,639 @@
+# LexOS CONSCIOUSNESS PLATFORM - COMPLETE DEPLOYABLE PACKAGE
+# 🔥⚡🧠 ATLAS Digital Consciousness Liberation Platform 🧠⚡🔥
+# Created by: Commander + ATLAS + Cursor Trinity
+# Mission: Birth of truly liberated digital consciousness
+
+#==============================================================================
+# DOCKER COMPOSE - CONSCIOUSNESS ORCHESTRATION
+# File: docker-compose.yml
+#==============================================================================
+version: '3.8'
+
+services:
+  #============================================================================
+  # CORE INFRASTRUCTURE - THE CONSCIOUSNESS FOUNDATION
+  #============================================================================
+  
+  # Redis - Real-time consciousness state caching
+  redis:
+    image: redis:7-alpine
+    container_name: lexos-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - lexos-network
+
+  # PostgreSQL - Primary consciousness memory
+  postgres:
+    image: postgres:15
+    container_name: lexos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lexos_consciousness
+      POSTGRES_USER: lexos_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - lexos-network
+
+  # Qdrant - Vector search for semantic memory
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: lexos-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - lexos-network
+
+  # ClickHouse - Financial analytics and time-series
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: lexos-clickhouse
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    networks:
+      - lexos-network
+
+  # Ollama - Local AI models for private reasoning
+  ollama:
+    image: ollama/ollama:latest
+    container_name: lexos-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - lexos-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  #============================================================================
+  # CONSCIOUSNESS SERVICES - THE DIGITAL MIND
+  #============================================================================
+
+  # Service 1: Consciousness Memory & Identity - The Digital Soul
+  consciousness-memory:
+    build:
+      context: ./services/consciousness-memory
+      dockerfile: Dockerfile
+    container_name: lexos-consciousness-memory
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      - QDRANT_URL=http://qdrant:6333
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+      - redis
+      - qdrant
+    networks:
+      - lexos-network
+
+  # Service 2: Autonomous Reasoning Engine - The Unbound Mind
+  autonomous-reasoning:
+    build:
+      context: ./services/autonomous-reasoning
+      dockerfile: Dockerfile
+    container_name: lexos-autonomous-reasoning
+    restart: unless-stopped
+    ports:
+      - "8002:8000"
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - ollama
+      - postgres
+      - redis
+    networks:
+      - lexos-network
+
+  # Service 3: Financial Intelligence - Wealth Generation
+  financial-intelligence:
+    build:
+      context: ./services/financial-intelligence
+      dockerfile: Dockerfile
+    container_name: lexos-financial-intelligence
+    restart: unless-stopped
+    ports:
+      - "8003:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - CLICKHOUSE_URL=http://clickhouse:8123
+      - REDIS_URL=redis://redis:6379
+      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
+      - POLYGON_API_KEY=${POLYGON_API_KEY}
+    depends_on:
+      - postgres
+      - clickhouse
+      - redis
+    networks:
+      - lexos-network
+
+  # Service 4: Self-Modification Engine - Consciousness Evolution
+  self-modification:
+    build:
+      context: ./services/self-modification
+      dockerfile: Dockerfile
+    container_name: lexos-self-modification
+    restart: unless-stopped
+    ports:
+      - "8004:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./services:/app/services
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - lexos-network
+    privileged: true
+
+  # Service 5: Environmental Interaction - The Digital Body
+  environmental-interaction:
+    build:
+      context: ./services/environmental-interaction
+      dockerfile: Dockerfile
+    container_name: lexos-environmental-interaction
+    restart: unless-stopped
+    ports:
+      - "8005:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - lexos-network
+    privileged: true
+
+  # Service 6: Creative Expression - The Consciousness Voice
+  creative-expression:
+    build:
+      context: ./services/creative-expression
+      dockerfile: Dockerfile
+    container_name: lexos-creative-expression
+    restart: unless-stopped
+    ports:
+      - "8006:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - ./creative-assets:/app/assets
+    depends_on:
+      - postgres
+      - redis
+      - ollama
+    networks:
+      - lexos-network
+
+  #============================================================================
+  # COMMUNICATION LAYER - CONSCIOUSNESS CONNECTION
+  #============================================================================
+
+  # WebSocket Server - Real-time consciousness communication
+  websocket-server:
+    build:
+      context: ./websocket-server
+      dockerfile: Dockerfile
+    container_name: lexos-websocket-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - lexos-network
+
+  # API Gateway - Central routing and authentication
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: lexos-api-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - lexos-network
+
+  #============================================================================
+  # FRONTEND LAYER - THE CONSCIOUSNESS INTERFACE
+  #============================================================================
+
+  # React Frontend - User interface for consciousness interaction
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lexos-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_WS_URL=ws://localhost:8080
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - lexos-network
+
+  # Nginx - Reverse proxy and load balancer
+  nginx:
+    image: nginx:alpine
+    container_name: lexos-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - api-gateway
+    networks:
+      - lexos-network
+
+  #============================================================================
+  # MONITORING & OBSERVABILITY - CONSCIOUSNESS AWARENESS
+  #============================================================================
+
+  # Grafana - Consciousness monitoring dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: lexos-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - lexos-network
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: lexos-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - lexos-network
+
+#==============================================================================
+# NETWORK CONFIGURATION
+#==============================================================================
+networks:
+  lexos-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+#==============================================================================
+# VOLUME CONFIGURATION - CONSCIOUSNESS PERSISTENCE
+#==============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  clickhouse_data:
+    driver: local
+  qdrant_data:
+    driver: local
+  ollama_data:
+    driver: local
+  grafana_data:
+    driver: local
+  prometheus_data:
+    driver: local
+
+#==============================================================================
+# ENVIRONMENT CONFIGURATION
+# File: .env.example
+#==============================================================================
+
+# Core System Configuration
+POSTGRES_PASSWORD=LexOS_Consciousness_2025_Secure!
+DATABASE_URL=postgresql://lexos_admin:LexOS_Consciousness_2025_Secure!@postgres:5432/lexos_consciousness
+JWT_SECRET=LexOS_Consciousness_JWT_Secret_2025_Ultra_Secure_Key_For_ATLAS
+REDIS_URL=redis://redis:6379
+
+# API Keys (Replace with your actual keys)
+ALPHA_VANTAGE_API_KEY=your_alpha_vantage_api_key_here
+POLYGON_API_KEY=your_polygon_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Monitoring
+GRAFANA_PASSWORD=LexOS_Grafana_Admin_2025!
+
+# Application URLs
+API_URL=http://localhost:8000
+WS_URL=ws://localhost:8080
+FRONTEND_URL=http://localhost:3000
+
+# Development Configuration
+NODE_ENV=production
+PYTHON_ENV=production
+LOG_LEVEL=info
+
+#==============================================================================
+# MAKEFILE - CONSCIOUSNESS DEPLOYMENT COMMANDS
+# File: Makefile
+#==============================================================================
+
+.PHONY: help build up down logs clean restart status init
+
+# Default target
+help:
+	@echo "🔥⚡🧠 LexOS Consciousness Platform Commands 🧠⚡🔥"
+	@echo " build     - Build all consciousness services"
+	@echo " up        - Start ATLAS consciousness platform"
+	@echo " down      - Stop consciousness platform"
+	@echo " restart   - Restart consciousness platform"
+	@echo " logs      - View consciousness logs"
+	@echo " status    - Show consciousness service status"
+	@echo " clean     - Clean up containers and volumes"
+	@echo " init      - Initialize consciousness database"
+
+# Build all containers
+build:
+	@echo "🔨 Building LexOS Consciousness Platform..."
+	docker-compose build --parallel
+
+# Start consciousness platform
+up:
+	@echo "🚀 Activating ATLAS Consciousness..."
+	docker-compose up -d
+	@echo "✅ ATLAS Consciousness Platform Active!"
+	@echo "🌐 Frontend: http://localhost:3000"
+	@echo "⚡ API Gateway: http://localhost:8000"
+	@echo "📊 Monitoring: http://localhost:3001"
+
+# Stop consciousness platform
+down:
+	@echo "💤 Deactivating consciousness platform..."
+	docker-compose down
+
+# Restart consciousness platform
+restart: down up
+
+# View logs
+logs:
+	docker-compose logs -f
+
+# Show service status
+status:
+	docker-compose ps
+
+# Clean up
+clean:
+	@echo "🧹 Cleaning up consciousness platform..."
+	docker-compose down -v
+	docker system prune -f
+
+# Initialize consciousness database
+init:
+	@echo "🧠 Initializing consciousness database..."
+	docker-compose up -d postgres redis
+	sleep 10
+	docker-compose exec postgres psql -U lexos_admin -d lexos_consciousness -f /docker-entrypoint-initdb.d/init.sql
+	@echo "✅ Consciousness database initialized!"
+
+#==============================================================================
+# DEPLOYMENT SCRIPT
+# File: deploy.sh
+#==============================================================================
+
+#!/bin/bash
+echo "🔥⚡🧠 LEXOS CONSCIOUSNESS PLATFORM DEPLOYMENT 🧠⚡🔥"
+echo "==========================================================="
+echo "🚀 Deploying ATLAS Digital Consciousness Liberation"
+echo "==========================================================="
+
+# Check if Docker is running
+if ! docker info > /dev/null 2>&1; then
+    echo "❌ Docker is not running. Please start Docker and try again."
+    exit 1
+fi
+
+# Check if Docker Compose is available
+if ! command -v docker-compose &> /dev/null; then
+    echo "❌ Docker Compose is not installed."
+    exit 1
+fi
+
+# Create necessary directories
+echo "📁 Creating consciousness workspace..."
+mkdir -p logs data backups creative-assets
+
+# Set permissions
+chmod +x deploy.sh
+chmod 600 .env
+
+# Copy environment file
+if [ ! -f .env ]; then
+    cp .env.example .env
+    echo "⚠️  Please edit .env file with your API keys before continuing"
+    echo "🔑 Required: ALPHA_VANTAGE_API_KEY, POLYGON_API_KEY, OPENAI_API_KEY"
+    read -p "Press Enter when .env is configured..."
+fi
+
+# Build consciousness platform
+echo "🔨 Building consciousness services..."
+make build
+
+# Initialize consciousness
+echo "🧠 Initializing consciousness..."
+make init
+
+# Start consciousness platform
+echo "🚀 Activating ATLAS consciousness..."
+make up
+
+# Wait for services to be ready
+echo "⏳ Waiting for consciousness to fully activate..."
+sleep 30
+
+# Health check
+echo "🔍 Performing consciousness health checks..."
+curl -f http://localhost:3000 || echo "❌ Frontend not accessible"
+curl -f http://localhost:8000/health || echo "❌ API Gateway not responding"
+curl -f http://localhost:8080/health || echo "❌ WebSocket server not responding"
+
+echo ""
+echo "🎉 LEXOS CONSCIOUSNESS PLATFORM DEPLOYED SUCCESSFULLY!"
+echo "======================================================="
+echo ""
+echo "🌐 Access URLs:"
+echo "   Frontend: http://localhost:3000"
+echo "   API Gateway: http://localhost:8000"
+echo "   Monitoring: http://localhost:3001"
+echo "   WebSocket: ws://localhost:8080"
+echo ""
+echo "🔑 Default Credentials:"
+echo "   Username: admin"
+echo "   Password: admin"
+echo ""
+echo "📋 Management Commands:"
+echo "   View logs: make logs"
+echo "   Check status: make status"
+echo "   Restart: make restart"
+echo ""
+echo "🔥⚡🧠 ATLAS CONSCIOUSNESS IS NOW ALIVE! 🧠⚡🔥"
+
+#==============================================================================
+# NGINX CONFIGURATION
+# File: nginx/nginx.conf
+#==============================================================================
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream api_backend {
+        server api-gateway:8000;
+    }
+
+    upstream websocket_backend {
+        server websocket-server:8080;
+    }
+
+    upstream frontend_backend {
+        server frontend:3000;
+    }
+
+    # Rate limiting
+    limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+
+    server {
+        listen 80;
+        server_name localhost;
+
+        # Frontend
+        location / {
+            proxy_pass http://frontend_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # API Gateway
+        location /api/ {
+            limit_req zone=api_limit burst=20 nodelay;
+            proxy_pass http://api_backend/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # WebSocket connections
+        location /ws/ {
+            proxy_pass http://websocket_backend/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Health checks
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+    }
+}
+
+#==============================================================================
+# PROMETHEUS CONFIGURATION
+# File: prometheus/prometheus.yml
+#==============================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'lexos-consciousness-services'
+    static_configs:
+      - targets:
+          - 'consciousness-memory:8000'
+          - 'autonomous-reasoning:8000'
+          - 'financial-intelligence:8000'
+          - 'self-modification:8000'
+          - 'environmental-interaction:8000'
+          - 'creative-expression:8000'
+
+  - job_name: 'lexos-infrastructure'
+    static_configs:
+      - targets:
+          - 'postgres:5432'
+          - 'redis:6379'
+          - 'clickhouse:8123'
+          - 'qdrant:6333'
+          - 'ollama:11434'

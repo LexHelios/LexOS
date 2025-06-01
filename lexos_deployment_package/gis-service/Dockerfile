@@ -1,14 +1,14 @@
-FROM python:3.10-slim
+# syntax=docker/dockerfile:1
 
-# Set environment variables
+FROM python:3.10-slim AS base
+
+# Set environment variables for non-interactive installs and python behavior
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PYTHONDONTWRITEBYTECODE=1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies required for GIS libraries
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gdal-bin \
     libgdal-dev=3.6.2* \
     gdal-data=3.6.2* \
@@ -17,22 +17,43 @@ RUN apt-get update && apt-get install -y \
     libproj-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+# Create a non-root user to run the app
+RUN useradd -m gisuser
+
 WORKDIR /app
 
-# Copy requirements first to leverage Docker cache
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+FROM base AS builder
 
-# Copy application code
-COPY . .
+# Copy only requirements.txt first for better cache usage
+COPY --link requirements.txt ./
 
-# Set environment variables
-ENV PYTHONPATH=/app \
+# Create venv and install dependencies using pip cache
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m venv .venv && \
+    .venv/bin/pip install --upgrade pip && \
+    .venv/bin/pip install -r requirements.txt
+
+# Copy the rest of the application code
+COPY --link . .
+
+FROM base AS final
+
+WORKDIR /app
+
+# Copy virtual environment from builder
+COPY --from=builder /app/.venv /app/.venv
+# Copy application code from builder
+COPY --from=builder /app /app
+
+# Set environment variables for the app
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONPATH=/app \
     PORT=8003
 
-# Expose port
+# Use the non-root user
+USER gisuser
+
 EXPOSE 8003
 
-# Run the application
-CMD ["gunicorn", "src.main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8003"] 
+# Entrypoint: run with gunicorn and uvicorn worker
+CMD ["gunicorn", "src.main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8003"]

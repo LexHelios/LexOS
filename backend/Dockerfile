@@ -1,37 +1,60 @@
-# Use Python 3.11 slim image
-FROM python:3.11-slim
+# syntax=docker/dockerfile:1
 
-# Set working directory
+FROM python:3.11-slim AS base
+
+# Set environment variables for pip cache
+ENV PIP_CACHE_DIR=/root/.cache/pip
+
+# Create a non-root user
+RUN addgroup --system lexos && adduser --system --ingroup lexos lexos
+
+# Set workdir
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# --- Builder stage ---
+FROM base AS builder
 
-# Copy requirements file
-COPY requirements.txt .
+# Copy requirements.txt first for better cache utilization
+COPY --link requirements.txt ./
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Create virtual environment and install dependencies using pip cache
+RUN --mount=type=cache,target=$PIP_CACHE_DIR \
+    python -m venv .venv && \
+    .venv/bin/pip install --upgrade pip && \
+    .venv/bin/pip install -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy the rest of the application code
+COPY --link . .
 
-# Create necessary directories
-RUN mkdir -p /app/logs /app/data
+# --- Final stage ---
+FROM base AS final
+
+WORKDIR /app
+
+# Copy virtual environment from builder
+COPY --from=builder /app/.venv /app/.venv
+
+# Copy application code from builder
+COPY --from=builder /app /app
 
 # Set environment variables
+ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+
+# Create necessary directories and set permissions
+RUN mkdir -p /app/logs /app/data && \
+    chown -R lexos:lexos /app
+
+# Switch to non-root user
+USER lexos
 
 # Expose port
 EXPOSE 8000
 
-# Health check
+# Healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the application
+# Default command
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

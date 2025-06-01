@@ -1,13 +1,13 @@
-# Use NVIDIA CUDA base image
-FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
+# syntax=docker/dockerfile:1
 
-# Set environment variables
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04 AS base
+
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.10 \
     python3-pip \
     git \
@@ -25,21 +25,51 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy requirements file
-COPY requirements.txt .
+# Create a non-root user
+RUN useradd -m oracleuser
 
-# Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+FROM base AS builder
 
-# Copy source code and configuration
-COPY src/ /app/src/
-COPY config/ /app/config/
+WORKDIR /app
+
+# Copy requirements file with --link for build cache efficiency
+COPY --link requirements.txt ./
+
+# Create virtual environment and install dependencies using pip cache
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python3.10 -m venv .venv && \
+    .venv/bin/pip install --upgrade pip && \
+    .venv/bin/pip install -r requirements.txt
+
+# Copy application source and config (with --link)
+COPY --link src/ /app/src/
+COPY --link config/ /app/config/
 
 # Create directories for data and models
 RUN mkdir -p /app/data /app/models
 
-# Set Python path
+FROM base AS final
+
+WORKDIR /app
+
+# Copy virtual environment from builder
+COPY --from=builder /app/.venv /app/.venv
+
+# Copy application code and config from builder
+COPY --from=builder /app/src /app/src
+COPY --from=builder /app/config /app/config
+COPY --from=builder /app/data /app/data
+COPY --from=builder /app/models /app/models
+
+# Set environment for venv
+ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH=/app
 
+# Set user to non-root
+USER oracleuser
+
+# Expose port (FastAPI default)
+EXPOSE 8000
+
 # Run the service
-CMD ["python3", "src/main.py"] 
+CMD ["python3", "src/main.py"]
