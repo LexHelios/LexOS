@@ -11,6 +11,9 @@ import requests
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Ollama API URL (TensorDock public IP and external port)
+OLLAMA_URL = "http://206.168.80.2:8335/api/generate"
+
 @asynccontextmanager
 async def get_redis():
     redis_client = redis.Redis(
@@ -55,11 +58,17 @@ async def agent_endpoint(request: Request):
     data = await request.json()
     message = data.get("message")
     # Call Ollama API for Mixtral
-    response = requests.post(
-        "http://localhost:11434/api/generate",
-        json={"model": "mixtral", "prompt": message}
-    )
-    reply = response.json().get("response", "")
+    try:
+        response = requests.post(
+            OLLAMA_URL,
+            json={"model": "mixtral", "prompt": message},
+            timeout=60
+        )
+        response.raise_for_status()
+        reply = response.json().get("response", "")
+    except Exception as e:
+        logger.error(f"Ollama API error: {e}")
+        reply = "Error contacting LLM backend."
     return {"reply": reply}
 
 @app.on_event("startup")
