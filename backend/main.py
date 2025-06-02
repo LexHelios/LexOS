@@ -5,12 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from contextlib import asynccontextmanager
 import redis.asyncio as redis
+import requests
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Redis connection (if needed)
 @asynccontextmanager
 async def get_redis():
     redis_client = redis.Redis(
@@ -25,7 +25,6 @@ async def get_redis():
     finally:
         await redis_client.close()
 
-# App init
 app = FastAPI(
     title="LexCommand API",
     version="1.0.0",
@@ -33,7 +32,6 @@ app = FastAPI(
     redoc_url="/redoc" if os.getenv("ENVIRONMENT") != "production" else None
 )
 
-# Add CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("ALLOWED_ORIGINS", "*").split(","),
@@ -42,27 +40,28 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# Security (if you want to use it later)
 security = HTTPBearer()
 
 @app.get("/health")
 async def health():
-    """Health check endpoint"""
     return {"status": "healthy"}
 
 @app.get("/")
 async def root():
-    """Root endpoint"""
     return {"message": "Welcome to LexCommand API"}
 
 @app.post("/api/agent")
 async def agent_endpoint(request: Request):
     data = await request.json()
     message = data.get("message")
-    # TODO: Replace this with your LLM/agent logic
-    return {"reply": f"Echo: {message}"}
+    # Call Ollama API for Mixtral
+    response = requests.post(
+        "http://localhost:11434/api/generate",
+        json={"model": "mixtral", "prompt": message}
+    )
+    reply = response.json().get("response", "")
+    return {"reply": reply}
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize services on startup"""
     logger.info("Starting up LexCommand API")
