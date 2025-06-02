@@ -1,20 +1,16 @@
-# /opt/lexcommand/backend/main.py
-
 import os
-from fastapi import FastAPI, Depends, HTTPException, Request, status
+import logging
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
-import jwt
-import redis.asyncio as redis
-from typing import Optional
-import logging
 from contextlib import asynccontextmanager
+import redis.asyncio as redis
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Redis connection
+# Redis connection (if needed)
 @asynccontextmanager
 async def get_redis():
     redis_client = redis.Redis(
@@ -46,7 +42,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# Security
+# Security (if you want to use it later)
 security = HTTPBearer()
 
 @app.get("/health")
@@ -58,6 +54,13 @@ async def health():
 async def root():
     """Root endpoint"""
     return {"message": "Welcome to LexCommand API"}
+
+@app.post("/api/agent")
+async def agent_endpoint(request: Request):
+    data = await request.json()
+    message = data.get("message")
+    # TODO: Replace this with your LLM/agent logic
+    return {"reply": f"Echo: {message}"}
 
 @app.on_event("startup")
 async def startup_event():
