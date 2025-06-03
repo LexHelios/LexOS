@@ -6,15 +6,19 @@ from fastapi.security import HTTPBearer
 from contextlib import asynccontextmanager
 import redis.asyncio as redis
 import requests
+<<<<<<< HEAD
 
 # Import Ollama integration
 from app.routers import ollama
 from app.services.ollama_service import OllamaService
+=======
+>>>>>>> df6f420f94df14d8ae0d14d8792e6d3ef9321938
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+<<<<<<< HEAD
 # Ollama configuration - now using environment variable
 OLLAMA_URL = os.getenv("OLLAMA_HOST", "http://206.168.80.2:8335")
 OLLAMA_API_GENERATE = f"{OLLAMA_URL}/api/generate"
@@ -44,6 +48,10 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down LexCommand API")
     if ollama_service:
         await ollama_service.close()
+=======
+# Ollama API URL (TensorDock public IP and external port)
+OLLAMA_URL = "http://206.168.80.2:8335/api/generate"
+>>>>>>> df6f420f94df14d8ae0d14d8792e6d3ef9321938
 
 @asynccontextmanager
 async def get_redis():
@@ -83,6 +91,7 @@ app.include_router(ollama.router)
 
 @app.get("/health")
 async def health():
+<<<<<<< HEAD
     """Health check endpoint with Ollama status"""
     ollama_status = "disconnected"
     if ollama_service:
@@ -134,10 +143,28 @@ async def agent_endpoint(request: Request):
         response = requests.post(
             OLLAMA_API_GENERATE,
             json={"model": model, "prompt": message},
+=======
+    return {"status": "healthy"}
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to LexCommand API"}
+
+@app.post("/api/agent")
+async def agent_endpoint(request: Request):
+    data = await request.json()
+    message = data.get("message")
+    # Call Ollama API for Mixtral
+    try:
+        response = requests.post(
+            OLLAMA_URL,
+            json={"model": "mixtral", "prompt": message},
+>>>>>>> df6f420f94df14d8ae0d14d8792e6d3ef9321938
             timeout=60
         )
         response.raise_for_status()
         reply = response.json().get("response", "")
+<<<<<<< HEAD
         
         return {
             "reply": reply,
@@ -312,3 +339,13 @@ if __name__ == "__main__":
         port=8000,
         reload=os.getenv("ENVIRONMENT") != "production"
     )
+=======
+    except Exception as e:
+        logger.error(f"Ollama API error: {e}")
+        reply = "Error contacting LLM backend."
+    return {"reply": reply}
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Starting up LexCommand API")
+>>>>>>> df6f420f94df14d8ae0d14d8792e6d3ef9321938
