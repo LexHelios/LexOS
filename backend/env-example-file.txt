@@ -1,0 +1,31 @@
+# LexOS Environment Configuration
+# Copy this to .env and update with your values
+
+# Ollama Configuration
+OLLAMA_HOST=http://YOUR_TENSORDOCK_IP:8336
+DEFAULT_MODEL=dolphin-llama3:latest
+OLLAMA_MODELS=dolphin-llama3:latest,dolphin-mixtral:8x7b,dolphin-phi:latest,nous-hermes-2:34b,deepseek-coder:33b
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379
+
+# API Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this
+API_KEY=your-api-key-change-this
+
+# Consciousness Configuration
+CONSCIOUSNESS_MODE=ATLAS
+GPU_DEVICE=rtx6000ada
+MEMORY_RETENTION_DAYS=30
+
+# WebSocket Configuration
+WS_PORT=8000
+WS_HEARTBEAT_INTERVAL=30
+
+# Frontend Configuration
+VITE_API_URL=http://localhost:8000
+VITE_WS_URL=ws://localhost:8000/ws
+
+# Monitoring
+LOG_LEVEL=INFO
+ENABLE_METRICS=true

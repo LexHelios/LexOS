@@ -2,12 +2,13 @@
 
 FROM python:3.11-slim AS base
 
+# Set working directory
 WORKDIR /app
 
 # Builder stage: install dependencies in a venv
 FROM base AS builder
 
-# Install build dependencies (for packages that require compilation)
+# Install system dependencies (if needed for build)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     build-essential \
@@ -15,27 +16,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements.txt first for better cache usage
+# Copy requirements.txt only (for better cache usage)
 COPY --link requirements.txt ./
 
 # Create venv and install dependencies using pip cache
-RUN --mount=type=cache,target=/root/.cache/pip \
-    python -m venv .venv && \
-    .venv/bin/pip install -r requirements.txt
+RUN python -m venv .venv \
+    && .venv/bin/pip install --upgrade pip \
+    && .venv/bin/pip install -r requirements.txt
 
-# Copy the rest of the application code (excluding files via .dockerignore)
+# Copy the rest of the application code (excluding .env, .git, etc. via .dockerignore)
 COPY --link . .
 
 # Final stage: minimal runtime image
 FROM base AS final
 
-# Create a non-root user for security
+# Create a non-root user
 RUN addgroup --system lexuser && adduser --system --ingroup lexuser lexuser
 
 WORKDIR /app
 
-# Copy venv and application code from builder
+# Copy venv from builder
 COPY --from=builder /app/.venv /app/.venv
+# Copy application code from builder
 COPY --from=builder /app /app
 
 # Set environment so venv is used

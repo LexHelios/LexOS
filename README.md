@@ -1,3 +1,7 @@
+# LexOS Unified Autonomous System
+
+**Note:** All legacy and unused files have been moved to the `old` directory for clarity. Only relevant, production-ready files remain in the main project structure. Please refer to the `old` directory if you need to access any previous or backup files.
+
 ## Running the Project with Docker
 
 This project is designed to run as a multi-service application using Docker Compose. Each service has its own Dockerfile and is orchestrated via the provided `docker-compose.yml` file. Below are the key details and instructions specific to this project.
