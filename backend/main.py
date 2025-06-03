@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Ollama API URL - Uses environment variable, fallback to localhost for development
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:8336/api/generate")
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama.lexcommand.ai:8336/api/generate")
 
 @asynccontextmanager
 async def get_redis():
