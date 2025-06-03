@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 # Ollama API URL (TensorDock public IP and external port)
 # IMPORTANT: Using port 8336 (not 8335) as shown in TensorDock dashboard
-OLLAMA_URL = "http://206.168.80.2:8336/api/generate"
+OLLAMA_URL = "http://localhost:8336/api/generate"
 
 @asynccontextmanager
 async def get_redis():
