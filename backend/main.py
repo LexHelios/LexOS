@@ -63,7 +63,7 @@ async def agent_endpoint(request: Request):
     try:
         response = requests.post(
             OLLAMA_URL,
-            json={"model": "dolphin-llama3:latest", "prompt": message},  # Changed to dolphin model
+            json={"model": "dolphin-llama3:latest", "prompt": message},
             timeout=60
         )
         response.raise_for_status()
@@ -78,16 +78,6 @@ async def agent_endpoint(request: Request):
 async def startup_event():
     logger.info("Starting up LexCommand API")
     logger.info(f"Ollama endpoint: {OLLAMA_URL}")
-    
-    # Quick test to verify Ollama connection
-    try:
-        test_response = requests.get("http://206.168.80.2:8336/api/tags", timeout=5)
-        if test_response.status_code == 200:
-            logger.info("✅ Ollama connection verified")
-        else:
-            logger.warning("⚠️ Ollama responded but with unexpected status")
-    except Exception as e:
-        logger.error(f"❌ Cannot connect to Ollama: {e}")
 
 if __name__ == "__main__":
     import uvicorn
