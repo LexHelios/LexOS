@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 const config = {
-  apiUrl: import.meta.env.VITE_API_URL || '',
-  wsUrl: import.meta.env.VITE_WS_URL || '',
+  apiUrl: import.meta.env.VITE_API_URL || 'https://lexos-2.onrender.com',
+  wsUrl: import.meta.env.VITE_WS_URL || 'wss://lexos-2.onrender.com/ws',  // ADD /ws HERE!
 };
 
 function App() {
