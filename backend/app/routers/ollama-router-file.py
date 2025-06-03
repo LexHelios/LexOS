@@ -65,4 +65,82 @@ async def reason(request: ReasoningRequest):
     result = await ollama_service.reason(
         prompt=request.prompt,
         model=request.model,
-        temperature=request.te
+        temperature=request.temperature,
+        context=request.context
+    )
+    
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
+    
+    return result
+
+@router.post("/consensus")
+async def consensus(request: ConsensusRequest):
+    """Multi-model consensus endpoint"""
+    result = await ollama_service.multi_model_consensus(
+        prompt=request.prompt,
+        models=request.models,
+        context=request.context
+    )
+    
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
+    
+    return result
+
+@router.post("/pull")
+async def pull_model(request: ModelPullRequest):
+    """Pull a new model from Ollama registry"""
+    success = await ollama_service.pull_model(request.model_name)
+    
+    if not success:
+        raise HTTPException(status_code=500, detail=f"Failed to pull model {request.model_name}")
+    
+    return {"message": f"Successfully pulled {request.model_name}", "success": True}
+
+@router.websocket("/stream")
+async def websocket_stream(websocket: WebSocket):
+    """WebSocket endpoint for streaming responses"""
+    await websocket.accept()
+    
+    try:
+        while True:
+            # Receive prompt from client
+            data = await websocket.receive_text()
+            request = json.loads(data)
+            
+            prompt = request.get("prompt", "")
+            model = request.get("model", "dolphin-llama3:latest")
+            
+            # Stream response back
+            full_response = ""
+            async def stream_callback(chunk):
+                nonlocal full_response
+                if "response" in chunk:
+                    full_response += chunk["response"]
+                    await websocket.send_json({
+                        "type": "stream",
+                        "content": chunk["response"],
+                        "done": chunk.get("done", False)
+                    })
+            
+            await ollama_service.stream_reasoning(
+                prompt=prompt,
+                model=model,
+                callback=stream_callback
+            )
+            
+            # Send final message
+            await websocket.send_json({
+                "type": "complete",
+                "full_response": full_response,
+                "model": model
+            })
+            
+    except Exception as e:
+        await websocket.send_json({
+            "type": "error",
+            "message": str(e)
+        })
+    finally:
+        await websocket.close()
