@@ -11,7 +11,7 @@ command -v vercel >/dev/null 2>&1 || { echo "❌ vercel CLI is required. Install
 
 # Environment variables
 export VITE_API_URL="https://api.lexcommand.ai"
-export VITE_WS_URL="wss://api.lexcommand.ai"
+export VITE_WS_URL="wss://api.lexcommand.ai/ws"
 export VITE_APP_ENV="production"
 
 # Frontend deployment
@@ -29,7 +29,7 @@ cd ..
 echo "✅ Deployment complete!"
 echo "🌐 Frontend: https://www.lexcommand.ai"
 echo "🔌 API: https://api.lexcommand.ai"
-echo "📡 WebSocket: wss://api.lexcommand.ai"
+echo "📡 WebSocket: wss://api.lexcommand.ai/ws"
 
 # Print deployment checklist
 echo "
