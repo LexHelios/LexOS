@@ -99,6 +99,13 @@ async def agent_endpoint(request: Request):
     try:
         logger.info(f"Sending request to Ollama at: {OLLAMA_URL}")
         
+        headers = {
+            "User-Agent": "LexOS/1.0",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Origin": "https://lexos-2.onrender.com",
+            "Referer": "https://lexos-2.onrender.com/"
+        }
         response = requests.post(
             OLLAMA_URL,
             json={
@@ -106,7 +113,8 @@ async def agent_endpoint(request: Request):
                 "prompt": message,
                 "stream": False
             },
-            timeout=60
+            timeout=60,
+            headers=headers
         )
         
         response.raise_for_status()
