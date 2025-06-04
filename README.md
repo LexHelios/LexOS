@@ -71,4 +71,31 @@ This project is designed to run as a multi-service application using Docker Comp
 - **Service Dependencies**: Most services depend on Postgres and Redis; ensure these are healthy before accessing application endpoints.
 - **For development**: You may comment/uncomment services in `docker-compose.yml` as needed.
 
+## Cloudflare Tunnel Configuration
+
+To expose the Ollama service through Cloudflare tunnels for external access, configure your `~/.cloudflared/config.yml` file as follows:
+
+```yaml
+tunnel: lexos-ollama
+credentials-file: /home/user/.cloudflared/16789be0-45cd-4929-b4b7-662ce1d7d39c.json
+
+ingress:
+  - hostname: ollama.lexcommand.ai
+    service: http://localhost:11434
+  - service: http_status:404
+```
+
+### Cloudflare Tunnel Setup Notes
+
+- **Tunnel Name**: `lexos-ollama` - This should match your configured tunnel in Cloudflare
+- **Credentials File**: Update the path to match your actual credentials file location
+- **Ollama Service**: The tunnel routes traffic to the local Ollama service running on port 11434
+- **Fallback**: All unmatched requests return a 404 status
+
+Make sure to:
+1. Install and authenticate `cloudflared` on your system
+2. Create the tunnel in your Cloudflare dashboard
+3. Download the credentials file to the specified path
+4. Ensure the Ollama service is running and accessible on localhost:11434
+
 Refer to the `docker-compose.yml` and individual service directories for further customization and advanced configuration.
