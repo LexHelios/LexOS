@@ -62,7 +62,7 @@ describe('useRealtimeUpdates Hook', () => {
   it('handles WebSocket messages', () => {
     // const { result } = renderHook(() => useRealtimeUpdates());
     // act(() => {
-    //   const ws = new WebSocket('ws://localhost:8000');
+    //   const ws = new WebSocket('ws://localhost:8000/ws');
     //   ws.onmessage?.({ data: JSON.stringify({}) } as any);
     // });
     expect(true).toBe(true); // Placeholder
@@ -71,7 +71,7 @@ describe('useRealtimeUpdates Hook', () => {
   it('handles WebSocket errors', () => {
     // const { result } = renderHook(() => useRealtimeUpdates());
     // act(() => {
-    //   const ws = new WebSocket('ws://localhost:8000');
+    //   const ws = new WebSocket('ws://localhost:8000/ws');
     //   ws.onerror?.({ message: 'Connection failed' } as any);
     // });
     expect(true).toBe(true); // Placeholder
@@ -79,7 +79,7 @@ describe('useRealtimeUpdates Hook', () => {
 
   it('cleans up WebSocket connection', () => {
     // const { unmount } = renderHook(() => useRealtimeUpdates());
-    // const ws = new WebSocket('ws://localhost:8000');
+    // const ws = new WebSocket('ws://localhost:8000/ws');
     // const closeSpy = jest.spyOn(ws, 'close');
     // unmount();
     // expect(closeSpy).toHaveBeenCalled();

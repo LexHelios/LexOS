@@ -3089,7 +3089,7 @@ NEO4J_PASSWORD=LexOS_Neo4j_2025_GraphDB!
 # =============================================================================
 
 API_URL=http://localhost:8000
-WS_URL=ws://localhost:8080
+WS_URL=ws://localhost:8080/ws
 FRONTEND_URL=http://localhost:3000
 
 # =============================================================================
@@ -7026,7 +7026,7 @@ function FinancialIntelligence() {
                       size="small"
                       onClick={() => removeFromWatchlist(symbol)}
                     >
-                      ×
+                      ï¿½
                     </IconButton>
                   </Box>
                   

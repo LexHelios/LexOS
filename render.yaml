@@ -55,7 +55,7 @@ services:
       - key: VITE_API_URL
         value: https://lexos-2.onrender.com
       - key: VITE_WS_URL
-        value: wss://lexos-2.onrender.com
+        value: wss://lexos-2.onrender.com/ws
     healthCheckPath: /
     autoDeploy: true
 

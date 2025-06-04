@@ -14,7 +14,7 @@ interface WebSocketState {
   reconnectAttempts: number;
 }
 
-export const useWebSocket = (url: string = 'ws://localhost:8080') => {
+export const useWebSocket = (url: string = 'ws://localhost:8000/ws') => {
   const [state, setState] = useState<WebSocketState>({
     isConnected: false,
     isConnecting: false,
