@@ -16,7 +16,7 @@ if (-not (Get-Command vercel -ErrorAction SilentlyContinue)) {
 
 # Environment variables
 $env:VITE_API_URL = "https://api.lexcommand.ai"
-$env:VITE_WS_URL = "wss://api.lexcommand.ai"
+$env:VITE_WS_URL = "wss://api.lexcommand.ai/ws"
 $env:VITE_APP_ENV = "production"
 
 # Frontend deployment
@@ -34,7 +34,7 @@ Set-Location ..
 Write-Host "✅ Deployment complete!" -ForegroundColor Green
 Write-Host "🌐 Frontend: https://www.lexcommand.ai" -ForegroundColor Cyan
 Write-Host "🔌 API: https://api.lexcommand.ai" -ForegroundColor Cyan
-Write-Host "📡 WebSocket: wss://api.lexcommand.ai" -ForegroundColor Cyan
+Write-Host "📡 WebSocket: wss://api.lexcommand.ai/ws" -ForegroundColor Cyan
 
 # Print deployment checklist
 Write-Host "
