@@ -43,10 +43,18 @@ export class OllamaService {
 
   constructor(
     baseUrl: string = import.meta.env.VITE_API_URL || 'http://localhost:8000',
-    wsUrl: string = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws'
+    wsUrl: string = import.meta.env.VITE_WS_URL || 'wss://lexos-2.onrender.com/ws'
   ) {
     this.baseUrl = baseUrl;
-    this.wsUrl = wsUrl;
+    
+    // Safety check: Ensure WebSocket URL ends with /ws for proper routing
+    // All WebSocket connections in LexOS must use the /ws endpoint
+    if (!wsUrl.endsWith('/ws')) {
+      this.wsUrl = wsUrl.replace(/\/$/, '') + '/ws'; // Remove trailing slash if exists, then add /ws
+      console.warn('WebSocket URL did not end with /ws, automatically appended:', this.wsUrl);
+    } else {
+      this.wsUrl = wsUrl;
+    }
   }
 
   // HTTP API calls

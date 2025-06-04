@@ -5,7 +5,15 @@ class WebSocketService {
   private messageHandlers: MessageHandler[] = [];
 
   connect(url: string) {
-    this.ws = new WebSocket(url);
+    // Safety check: Ensure WebSocket URL ends with /ws for proper backend routing
+    // All WebSocket connections in LexOS must use the /ws endpoint
+    let wsUrl = url;
+    if (!wsUrl.endsWith('/ws')) {
+      wsUrl = wsUrl.replace(/\/$/, '') + '/ws'; // Remove trailing slash if exists, then add /ws
+      console.warn('WebSocket URL did not end with /ws, automatically appended:', wsUrl);
+    }
+    
+    this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
       console.log('WebSocket connected');
@@ -22,8 +30,8 @@ class WebSocketService {
 
     this.ws.onclose = () => {
       console.log('WebSocket disconnected');
-      // Attempt to reconnect after 5 seconds
-      setTimeout(() => this.connect(url), 5000);
+      // Attempt to reconnect after 5 seconds using the same corrected URL
+      setTimeout(() => this.connect(wsUrl), 5000);
     };
   }
 

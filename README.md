@@ -21,6 +21,10 @@ This project is designed to run as a multi-service application using Docker Comp
   - `POSTGRES_PASSWORD=your_secure_password_here` (change for production)
 - **Redis**:
   - Password is set via `--requirepass your_redis_password_here` (change for production)
+- **WebSocket Configuration**:
+  - `VITE_WS_URL` - **MUST end with `/ws`** (e.g., `wss://lexos-2.onrender.com/ws`)
+  - The `/ws` endpoint is required for proper WebSocket routing in the backend
+  - If not specified, defaults to `wss://lexos-2.onrender.com/ws` in production
 - **.env Files**: Many services support an `.env` file for additional configuration. Uncomment the `env_file` lines in `docker-compose.yml` and provide the necessary `.env` files in each service directory as needed.
 
 ### Build and Run Instructions

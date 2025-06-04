@@ -2,7 +2,18 @@ import React, { useState, useRef, useEffect } from 'react';
 
 const config = {
   apiUrl: import.meta.env.VITE_API_URL || 'https://lexos-2.onrender.com',
-  wsUrl: import.meta.env.VITE_WS_URL || 'wss://lexos-2.onrender.com/ws',  // ADD /ws HERE!
+  wsUrl: (() => {
+    // IMPORTANT: All WebSocket connections must use the /ws endpoint for proper routing
+    let url = import.meta.env.VITE_WS_URL || 'wss://lexos-2.onrender.com/ws';
+    
+    // Safety check: Ensure the URL ends with /ws
+    if (!url.endsWith('/ws')) {
+      url = url.replace(/\/$/, '') + '/ws'; // Remove trailing slash if exists, then add /ws
+      console.warn('WebSocket URL did not end with /ws, automatically appended:', url);
+    }
+    
+    return url;
+  })(),
 };
 
 function App() {
@@ -63,6 +74,7 @@ function App() {
   };
 
   // WebSocket logic
+  // NOTE: WebSocket connection requires the /ws endpoint for proper backend routing
   useEffect(() => {
     if (!config.wsUrl) return;
     setWsStatus('connecting');

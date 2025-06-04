@@ -12,10 +12,14 @@ const useSocketStore = create<SocketState>((set, get) => ({
   socket: null,
   isConnected: false,
   connect: () => {
-    const wsUrl = import.meta.env.VITE_WS_URL;
-    if (!wsUrl) {
-      console.error("WebSocket URL not configured");
-      return;
+    // Get WebSocket URL from environment or use production fallback
+    // IMPORTANT: All WebSocket connections must use the /ws endpoint
+    let wsUrl = import.meta.env.VITE_WS_URL || 'wss://lexos-2.onrender.com/ws';
+    
+    // Safety check: Ensure the URL ends with /ws for proper WebSocket routing
+    if (!wsUrl.endsWith('/ws')) {
+      wsUrl = wsUrl.replace(/\/$/, '') + '/ws'; // Remove trailing slash if exists, then add /ws
+      console.warn('WebSocket URL did not end with /ws, automatically appended:', wsUrl);
     }
 
     const socket = new WebSocket(wsUrl);
